@@ -238,12 +238,23 @@ complementary to — not competing with — general MPC networks such as Arcium.
 
 ## 10. Related Work
 
-Umbra (stealth payments, amounts public); Tornado Cash / Privacy Pools
-(mixers, fungible-set anonymity); Zcash and Aztec (shielded pools);
-Fairblock and threshold-encryption mempools; Arcium (general MPC compute
-network). Veil is distinguished by composing *amount* privacy (FHE) with
-*recipient* privacy (stealth) in a distribution-specific protocol with a
-self-service claim flow.
+**Combining FHE with stealth addresses is not new.** HE-DKSAP and FHE-DKSAP
+(Dual-Key Stealth Address Protocols via (fully) homomorphic encryption,
+2023) apply homomorphic encryption to the *stealth-address key exchange itself*,
+hardening recipient-address derivation against quantum and key-leakage attacks.
+Veil differs in both purpose and architecture: it applies FHE to the **transfer
+amount** (via ERC-7984) and uses standard ECDH stealth addresses (ERC-5564) for
+the **recipient**, rather than encrypting the key exchange. Veil's contribution
+is therefore *applied and systems-level* — a deployed confidential-distribution
+protocol on the Zama Protocol with a self-service claim flow — not a new
+cryptographic primitive.
+
+Other related work: Umbra (stealth payments, amounts public); Tornado Cash /
+Privacy Pools (mixers, fungible-set anonymity); Zcash and Aztec (shielded pools);
+Fairblock and threshold-encryption mempools; Arcium (general MPC compute network,
+a *backend* in our §7 abstraction rather than a competitor). Veil is distinguished
+by composing *amount* privacy (FHE) with *recipient* privacy (stealth) in a
+distribution-specific protocol that recipients can self-claim.
 
 ## 11. Limitations & Future Work
 
