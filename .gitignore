@@ -1,0 +1,22 @@
+# deps
+node_modules/
+# build
+artifacts/
+cache/
+dist/
+.next/
+out/
+typechain-types/
+# env / secrets — NEVER commit keys
+.env
+.env.*
+*.key
+deployments/*.local.json
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+# logs
+*.log
+npm-debug.log*
