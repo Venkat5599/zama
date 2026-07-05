@@ -24,28 +24,21 @@ export default function WhitepaperPage() {
           </p>
         </div>
         <a
-          href="/veil-whitepaper.pdf"
-          download
+          href="/whitepaper.html"
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-2xl bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
         >
-          Download PDF
+          Open full page
         </a>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-border bg-frame">
-        <object
-          data="/veil-whitepaper.pdf#view=FitH"
-          type="application/pdf"
-          className="h-[80vh] w-full"
-        >
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            Your browser can't display the PDF inline.{" "}
-            <a href="/veil-whitepaper.pdf" className="text-foreground underline">
-              Open it here
-            </a>
-            .
-          </div>
-        </object>
+      <div className="overflow-hidden rounded-3xl border border-border bg-white">
+        <iframe
+          src="/whitepaper.html"
+          title="Veil Whitepaper"
+          className="h-[85vh] w-full"
+        />
       </div>
     </main>
   );
