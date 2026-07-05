@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Veil: Confidential Token Distribution</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  :root { --ink:#111; --muted:#555; --rule:#ccc; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    color: var(--ink); font-size: 10.2pt; line-height: 1.5;
+    margin: 0; text-align: justify; hyphens: auto;
+  }
+  .title-block { text-align: center; margin: 0 0 6mm; }
+  h1.doc { font-size: 19pt; line-height: 1.2; margin: 0 0 3mm; font-weight: 700; letter-spacing: -0.2px; }
+  .authors { font-size: 11pt; margin: 2mm 0 1mm; }
+  .affil { font-size: 9pt; color: var(--muted); font-style: italic; }
+  .meta { font-size: 8.5pt; color: var(--muted); margin-top: 2mm; font-family: "SF Mono", ui-monospace, monospace; }
+  .abstract { margin: 5mm 6mm; font-size: 9.6pt; line-height: 1.46; }
+  .abstract .lbl { font-weight: 700; }
+  .cols { column-count: 2; column-gap: 7mm; }
+  h2 { font-size: 11pt; margin: 4.5mm 0 1.5mm; font-weight: 700; break-after: avoid; counter-increment: sec; }
+  h2::before { content: counter(sec) ".  "; }
+  h3 { font-size: 9.8pt; margin: 3mm 0 1mm; font-weight: 700; break-after: avoid; }
+  body { counter-reset: sec fig tbl; }
+  p { margin: 0 0 2.2mm; orphans: 3; widows: 3; }
+  code, .mono { font-family: "SF Mono", "Consolas", ui-monospace, monospace; font-size: 8.4pt; }
+  pre {
+    background: #f6f6f4; border: 0.4pt solid var(--rule); border-radius: 3px;
+    padding: 2.4mm 3mm; font-size: 7.8pt; line-height: 1.4;
+    white-space: pre-wrap; margin: 2mm 0 3mm; break-inside: avoid;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 8.4pt; margin: 1mm 0 3mm; break-inside: avoid; }
+  th, td { border: 0.4pt solid var(--rule); padding: 1.1mm 1.8mm; text-align: left; vertical-align: top; }
+  th { background: #f0f0ee; font-weight: 700; }
+  figure { margin: 2mm 0 3mm; break-inside: avoid; text-align: center; }
+  figure svg { max-width: 100%; height: auto; }
+  figcaption { font-size: 8pt; color: var(--muted); margin-top: 1.5mm; text-align: center; }
+  figcaption::before { counter-increment: fig; content: "Figure " counter(fig) ". "; font-weight: 700; color: var(--ink); }
+  .caption-tbl::before { counter-increment: tbl; content: "Table " counter(tbl) ". "; font-weight: 700; color: var(--ink); }
+  .caption-tbl { font-size: 8pt; color: var(--muted); margin: 0 0 1mm; }
+  .fullwidth { column-span: all; }
+  ul { margin: 0 0 2.5mm; padding-left: 4.5mm; }
+  li { margin-bottom: 0.8mm; }
+  .rule { border: none; border-top: 0.6pt solid var(--ink); margin: 3mm 0; }
+  .small { font-size: 8pt; color: var(--muted); }
+  .kw { font-weight: 700; }
+  svg text { font-family: "Georgia", serif; }
+  svg .m { font-family: "SF Mono", monospace; }
+</style>
+</head>
+<body>
+
+<div class="title-block">
+  <h1 class="doc">Veil: A Backend-Agnostic Protocol for Confidential<br/>Token Distribution on Public Blockchains</h1>
+  <div class="authors">Veil Protocol</div>
+  <div class="affil">Zama Developer Program, Season 3 &mdash; Special Bounty Track &times; TokenOps</div>
+  <div class="meta">Sepolia: ConfidentialDisperse 0xB6E0497dfD8FDbfFB25F6AE3DC8104c46bBE8329 &nbsp;&middot;&nbsp; v0.2</div>
+</div>
+
+<div class="abstract">
+  <span class="lbl">Abstract&mdash;</span>
+  Token distributions on public blockchains&mdash;airdrops, payroll, investor
+  distributions, vesting&mdash;leak two sensitive dimensions: <em>how much</em> each
+  recipient receives and <em>who</em> the recipients are. Existing confidential-token
+  schemes based on fully homomorphic encryption (FHE) hide amounts but leave recipient
+  addresses, and therefore the distribution graph, fully public. We present
+  <span class="kw">Veil</span>, a protocol that composes FHE-based confidential tokens
+  (ERC-7984) with stealth-address cryptography (ERC-5564 / ERC-6538) to hide both
+  dimensions simultaneously. An onchain observer learns only that a distribution occurred
+  and an upper bound on its size; recipients independently scan, detect, and decrypt
+  <em>only their own allocation</em> through an EIP-712 user-decryption flow. We formalize
+  the protocol, analyze its security by reduction to the hardness of the underlying
+  primitives, and explicitly characterize its residual leakage. We report a working
+  deployment on the Sepolia testnet in which a single disperse transaction pays two
+  stealth recipients different encrypted amounts, each decrypting only their own. Finally,
+  we abstract the confidential-compute backend behind a narrow interface, positioning Veil
+  as an application-layer payments protocol rather than a compute network.
+</div>
+
+<hr class="rule" />
+
+<div class="cols">
+
+<h2>Introduction</h2>
+<p>Public blockchains are radically transparent by design. That transparency is an asset
+for auditability and a liability for finance. When an organization runs payroll onchain,
+every salary is public. When a project runs an airdrop, the full recipient list and
+per-recipient amounts are permanently legible to competitors, attackers, and the
+recipients' own counterparties.</p>
+<p>FHE-based confidential tokens (ERC-7984, enabled by the Zama Protocol) solve
+<em>half</em> of this: balances and transfer amounts become ciphertexts
+(<code>euint64</code>) that only authorized parties can decrypt. But the
+<span class="kw">recipient address remains in the clear</span>. An observer who cannot read
+amounts can still reconstruct the <em>shape</em> of a distribution&mdash;who received
+something, how many recipients there were, and how the recipients relate to other onchain
+identities. For payroll and airdrops, the recipient graph is often as sensitive as the
+amounts.</p>
+<p>Veil closes the gap by routing each confidential transfer to a
+<span class="kw">one-time stealth address</span> unlinkable to the recipient's public
+identity, and announcing it through the ERC-5564 standard so the recipient&mdash;and only
+the recipient&mdash;can detect it. The result: amounts hidden by FHE, identities hidden by
+stealth addresses, and a clean self-service claim flow.</p>
+<p class="kw">Contributions.</p>
+<ul>
+  <li>A protocol composing ERC-7984 confidential tokens with ERC-5564/6538 stealth
+  addresses for fully confidential disperse (&sect;5).</li>
+  <li>A security analysis reducing each privacy property to a standard assumption, plus an
+  honest leakage characterization and a decoy-padding mitigation (&sect;6).</li>
+  <li>A backend-abstraction argument showing the confidential-compute layer (FHE today,
+  MPC tomorrow) is replaceable behind a narrow interface (&sect;7).</li>
+  <li>A working Sepolia deployment with an end-to-end confidential disperse and
+  self-service claim (&sect;8).</li>
+</ul>
+
+<h2>Threat Model</h2>
+<p><span class="kw">Parties.</span> A <em>sender</em> (distribution organizer), a set of
+<em>recipients</em>, and the <em>Zama coprocessor / threshold decryption network</em>. An
+optional <em>relayer</em> submits transactions on the sender's behalf.</p>
+<p><span class="kw">Adversary.</span> A computationally bounded observer with full read
+access to chain state and the public mempool. The adversary may control some recipients
+and may collude with a relayer. We assume the threshold decryption committee is honest
+below its corruption threshold (inherited from the Zama Protocol).</p>
+<p><span class="kw">Goals (in scope).</span> <em>Amount confidentiality</em>: the adversary
+learns nothing about any honest recipient's amount. <em>Recipient unlinkability</em>: the
+adversary cannot link a stealth address to a recipient's published meta-address or any
+other onchain identity.</p>
+<p><span class="kw">Out of scope</span> (stated honestly; mitigations in &sect;6): the
+recipient <em>count</em> (or a padded upper bound); sender identity (the sender signs the
+disperse transaction); network-level metadata (timing, IP, gas-pattern side channels).</p>
+
+<h2>Background</h2>
+<h3>3.1&ensp;FHE and confidential tokens (ERC-7984)</h3>
+<p>Fully homomorphic encryption permits computation directly on ciphertexts. The Zama
+Protocol exposes FHE to EVM contracts through a coprocessor: contracts manipulate
+ciphertext <em>handles</em> (<code>euint64</code>) while the actual TFHE operations
+execute off-chain and results are attested back. ERC-7984 is the confidential
+fungible-token standard: balances are encrypted, and access to decrypt a given ciphertext
+is governed by an onchain <span class="kw">access-control list (ACL)</span> managed via
+<code>FHE.allow</code>.</p>
+<h3>3.2&ensp;User decryption (EIP-712)</h3>
+<p>A user reads their own ciphertext by signing an EIP-712 request authorizing the
+threshold network to re-encrypt the value under the user's key. Only a party the ACL has
+granted access to can obtain a valid decryption.</p>
+<h3>3.3&ensp;Stealth addresses (ERC-5564 / ERC-6538)</h3>
+<p>A recipient publishes a <span class="kw">meta-address</span>
+<code>M = (P_spend, P_view)</code> to the ERC-6538 registry. A sender derives a fresh,
+single-use <span class="kw">stealth address</span> using Diffie&ndash;Hellman against
+<code>P_view</code>, and posts an <span class="kw">announcement</span> (ERC-5564)
+containing an ephemeral public key and a one-byte <em>view tag</em>. The recipient scans
+announcements with their viewing key; the view tag lets them reject ~255/256 of irrelevant
+announcements before doing elliptic-curve work.</p>
+
+<figure class="fullwidth">
+<svg viewBox="0 0 720 200" width="720" xmlns="http://www.w3.org/2000/svg" font-size="11">
+  <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#111"/></marker></defs>
+  <rect x="14" y="78" width="96" height="46" rx="6" fill="#fff" stroke="#111"/>
+  <text x="62" y="98" text-anchor="middle">Sender</text>
+  <text x="62" y="113" text-anchor="middle" font-size="8.5" fill="#555">browser client</text>
+  <rect x="220" y="70" width="150" height="62" rx="6" fill="#f3f3f0" stroke="#111"/>
+  <text x="295" y="91" text-anchor="middle" font-weight="bold">ConfidentialDisperse</text>
+  <text x="295" y="106" text-anchor="middle" font-size="8.5" fill="#555">verify proof, transfer,</text>
+  <text x="295" y="118" text-anchor="middle" font-size="8.5" fill="#555">grant ACL, announce</text>
+  <rect x="440" y="16" width="132" height="44" rx="6" fill="#fff" stroke="#111"/>
+  <text x="506" y="35" text-anchor="middle">ERC-7984 cToken</text>
+  <text x="506" y="49" text-anchor="middle" font-size="8.5" fill="#555" class="m">euint64 balances</text>
+  <rect x="440" y="78" width="132" height="44" rx="6" fill="#fff" stroke="#111"/>
+  <text x="506" y="97" text-anchor="middle">ERC-5564 Announcer</text>
+  <text x="506" y="111" text-anchor="middle" font-size="8.5" fill="#555">stealth events</text>
+  <rect x="440" y="140" width="132" height="44" rx="6" fill="#fff" stroke="#111"/>
+  <text x="506" y="159" text-anchor="middle">Zama Coprocessor</text>
+  <text x="506" y="173" text-anchor="middle" font-size="8.5" fill="#555">TFHE + threshold</text>
+  <rect x="610" y="78" width="96" height="46" rx="6" fill="#fff" stroke="#111"/>
+  <text x="658" y="98" text-anchor="middle">Recipient</text>
+  <text x="658" y="113" text-anchor="middle" font-size="8.5" fill="#555">scan + decrypt</text>
+  <line x1="110" y1="101" x2="218" y2="101" stroke="#111" marker-end="url(#ar)"/>
+  <text x="164" y="96" text-anchor="middle" font-size="8" fill="#555">disperse()</text>
+  <line x1="370" y1="94" x2="438" y2="50" stroke="#111" marker-end="url(#ar)"/>
+  <line x1="370" y1="101" x2="438" y2="100" stroke="#111" marker-end="url(#ar)"/>
+  <line x1="370" y1="110" x2="438" y2="158" stroke="#111" marker-end="url(#ar)"/>
+  <line x1="572" y1="100" x2="608" y2="100" stroke="#111" stroke-dasharray="3 2" marker-end="url(#ar)"/>
+  <text x="590" y="94" text-anchor="middle" font-size="8" fill="#555">scan</text>
+  <line x1="640" y1="124" x2="560" y2="158" stroke="#111" stroke-dasharray="3 2" marker-end="url(#ar)"/>
+  <text x="626" y="148" text-anchor="middle" font-size="8" fill="#555">userDecrypt</text>
+</svg>
+<figcaption>System architecture. Solid arrows: the sender's single disperse transaction. Dashed: the recipient's independent scan and EIP-712 user-decryption. The contract holds no funds.</figcaption>
+</figure>
+
+<h2>Notation</h2>
+<table>
+<tr><th>Symbol</th><th>Meaning</th></tr>
+<tr><td class="mono">G, n</td><td>secp256k1 generator and group order</td></tr>
+<tr><td class="mono">H(&middot;)</td><td>hash to scalar mod n</td></tr>
+<tr><td class="mono">M_i = (P_spend, P_view)</td><td>recipient i meta-address (public)</td></tr>
+<tr><td class="mono">(p_spend, p_view)</td><td>recipient i private keys</td></tr>
+<tr><td class="mono">(r_i, R_i = r_i&middot;G)</td><td>sender ephemeral keypair</td></tr>
+<tr><td class="mono">s_i</td><td>ECDH shared secret</td></tr>
+<tr><td class="mono">A_i</td><td>stealth address for recipient i</td></tr>
+<tr><td class="mono">v_i</td><td>one-byte view tag</td></tr>
+<tr><td class="mono">ct_i</td><td>FHE ciphertext of amount</td></tr>
+</table>
+
+<h2>The Veil Protocol</h2>
+<h3>5.1&ensp;Registration (recipient, once)</h3>
+<p>Recipient <code>i</code> publishes <code>M_i = (P_spend, P_view)</code> to the ERC-6538
+registry.</p>
+<h3>5.2&ensp;Disperse (sender)</h3>
+<p>For each recipient <code>i</code> with amount <code>m_i</code>, the client derives:</p>
+<pre>1. (r_i, R_i = r_i&middot;G)                  // fresh ephemeral keypair
+2. s_i = H( r_i &middot; P_view )            // ECDH against viewing key
+3. A_i = addr( P_spend + H(s_i)&middot;G )   // one-time stealth address
+4. v_i = s_i[0]                         // 1-byte view tag
+5. ct_i = FHE.encrypt(m_i) -> (h_i,&pi;)   // client-side; &pi; = ZK input proof
+6. submit disperse(A[], h[], &pi;, R[], v[])</pre>
+<p>Onchain, for each <code>i</code>, the contract executes:</p>
+<pre>amt_i = FHE.fromExternal(h_i, &pi;)        // verify input proof
+FHE.allowTransient(amt_i, cToken)       // token may operate on handle
+cToken.confidentialTransferFrom(sender, A_i, amt_i)
+announcer.announce(SCHEME_ID, A_i, R_i, v_i)</pre>
+<p>The ERC-7984 token's internal <code>_update</code> grants the recipient decrypt rights
+on both the transferred amount and the new balance (<code>FHE.allow(&middot;, A_i)</code>).
+This is essential: the stealth address is newly derived and has no prior ACL entry, so
+without the grant the recipient could never decrypt the received balance. The sender
+authorizes the contract once via <code>cToken.setOperator</code>.</p>
+
+<figure>
+<svg viewBox="0 0 340 244" width="340" xmlns="http://www.w3.org/2000/svg" font-size="10.5">
+  <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#111"/></marker></defs>
+  <text x="45" y="14" text-anchor="middle" font-weight="bold" font-size="9.5">Sender</text>
+  <text x="170" y="14" text-anchor="middle" font-weight="bold" font-size="9.5">Disperse</text>
+  <text x="295" y="14" text-anchor="middle" font-weight="bold" font-size="9.5">cToken</text>
+  <line x1="45" y1="22" x2="45" y2="236" stroke="#111" stroke-width="0.6"/>
+  <line x1="170" y1="22" x2="170" y2="236" stroke="#111" stroke-width="0.6"/>
+  <line x1="295" y1="22" x2="295" y2="236" stroke="#111" stroke-width="0.6"/>
+  <line x1="45" y1="44" x2="293" y2="44" stroke="#111" marker-end="url(#ar2)"/>
+  <text x="170" y="39" text-anchor="middle" font-size="8" fill="#555">setOperator (once)</text>
+  <line x1="45" y1="82" x2="168" y2="82" stroke="#111" marker-end="url(#ar2)"/>
+  <text x="106" y="77" text-anchor="middle" font-size="8" fill="#555" class="m">disperse(A,h,&pi;,R,v)</text>
+  <rect x="120" y="102" width="100" height="20" fill="#f3f3f0" stroke="#111" stroke-width="0.5"/>
+  <text x="170" y="115" text-anchor="middle" font-size="7.6">fromExternal(h,&pi;)</text>
+  <line x1="170" y1="144" x2="293" y2="144" stroke="#111" marker-end="url(#ar2)"/>
+  <text x="232" y="139" text-anchor="middle" font-size="7.6" fill="#555">transferFrom &rarr; A_i</text>
+  <rect x="250" y="158" width="86" height="30" fill="#f3f3f0" stroke="#111" stroke-width="0.5"/>
+  <text x="293" y="171" text-anchor="middle" font-size="7.4">FHE.allow(bal, A_i)</text>
+  <text x="293" y="182" text-anchor="middle" font-size="7.4" fill="#555">ACL grant</text>
+  <rect x="112" y="206" width="116" height="20" fill="#fff" stroke="#111" stroke-width="0.5"/>
+  <text x="170" y="219" text-anchor="middle" font-size="7.6">announce(A_i,R_i,v_i)</text>
+</svg>
+<figcaption>Disperse write path (per recipient, within one transaction). The token, not the Veil contract, performs the ACL grant to the freshly derived stealth address.</figcaption>
+</figure>
+
+<h3>5.3&ensp;Scan &amp; Claim (recipient)</h3>
+<pre>for each Announcement (A, R, v):
+  s = H( p_view &middot; R )                // ECDH against ephemeral key
+  if s[0] != v: continue              // view-tag fast reject (~255/256)
+  if addr(P_spend + H(s)&middot;G) == A:     // it's mine
+    p = (p_spend + H(s)) mod n        // stealth private key
+    balance = userDecrypt(cToken, A)  // EIP-712, signed by p</pre>
+
+<figure>
+<svg viewBox="0 0 340 92" width="340" xmlns="http://www.w3.org/2000/svg" font-size="9">
+  <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#111"/></marker></defs>
+  <rect x="6" y="28" width="70" height="36" rx="4" fill="#fff" stroke="#111"/>
+  <text x="41" y="44" text-anchor="middle">all events</text>
+  <text x="41" y="56" text-anchor="middle" font-size="7.5" fill="#555">N announced</text>
+  <rect x="108" y="28" width="76" height="36" rx="4" fill="#f3f3f0" stroke="#111"/>
+  <text x="146" y="44" text-anchor="middle">view-tag</text>
+  <text x="146" y="56" text-anchor="middle" font-size="7.5" fill="#555">~N/256 pass</text>
+  <rect x="216" y="28" width="70" height="36" rx="4" fill="#f3f3f0" stroke="#111"/>
+  <text x="251" y="44" text-anchor="middle">key match</text>
+  <text x="251" y="56" text-anchor="middle" font-size="7.5" fill="#555">mine</text>
+  <rect x="300" y="28" width="34" height="36" rx="4" fill="#111"/>
+  <text x="317" y="49" text-anchor="middle" fill="#fff" font-size="8.5">m_i</text>
+  <line x1="76" y1="46" x2="106" y2="46" stroke="#111" marker-end="url(#ar3)"/>
+  <line x1="184" y1="46" x2="214" y2="46" stroke="#111" marker-end="url(#ar3)"/>
+  <line x1="286" y1="46" x2="298" y2="46" stroke="#111" marker-end="url(#ar3)"/>
+</svg>
+<figcaption>Scan funnel. The one-byte view tag discards ~255/256 of announcements before any elliptic-curve work; only a full key match triggers an EIP-712 decryption.</figcaption>
+</figure>
+
+<h2>Security Analysis</h2>
+<h3>6.1&ensp;Amount confidentiality</h3>
+<p>Amounts are encrypted under TFHE and only decryptable by parties the ACL authorizes. An
+adversary distinguishing two amounts breaks TFHE IND-CPA or the threshold-decryption
+security of the Zama network. Honest recipients' amounts are therefore semantically hidden
+from any observer not granted ACL access.</p>
+<h3>6.2&ensp;Recipient unlinkability</h3>
+<p>Linking <code>A_i</code> to <code>M_i</code> requires computing
+<code>s_i = H(r_i &middot; P_view)</code> from public values <code>R_i</code> and
+<code>P_view</code>&mdash;i.e., solving computational Diffie&ndash;Hellman on secp256k1.
+Under the DDH/CDH assumption, stealth addresses are unlinkable to meta-addresses and to
+each other. This is the standard ERC-5564 guarantee.</p>
+<h3>6.3&ensp;Combined view</h3>
+<p>An observer with only chain data learns: (a) that a disperse transaction occurred, (b)
+the sender, and (c) the number of announcements. They learn neither amounts nor recipient
+identities.</p>
+<h3>6.4&ensp;Residual leakage and mitigations</h3>
+<div class="caption-tbl">Residual leakage under the &sect;2 adversary, with mitigations.</div>
+<table>
+<tr><th>Leak</th><th>Sev.</th><th>Mitigation</th></tr>
+<tr><td>Recipient <span class="kw">count</span></td><td>med</td><td><span class="kw">Decoy padding</span>: dummy announcements to a fixed N; decoys carry FHE.encrypt(0), indistinguishable onchain.</td></tr>
+<tr><td><span class="kw">Sender</span> identity</td><td>med</td><td>Relayer / meta-transaction / account-abstraction sponsor.</td></tr>
+<tr><td><span class="kw">Timing, gas</span></td><td>low</td><td>Fixed batch size + uniform per-recipient operations.</td></tr>
+<tr><td>Total amount</td><td>none</td><td>FHE hides the homomorphic sum if exposed at all.</td></tr>
+</table>
+<p>Disclosing leakage explicitly is a feature, not a weakness: a protocol that names its
+boundaries is auditable; one that claims &ldquo;fully private&rdquo; is not.</p>
+
+<h2>Backend Abstraction</h2>
+<p>The protocol uses the confidential-compute backend only to (i) encrypt an amount to a
+ciphertext handle with a verifiable input proof, (ii) transfer the handle under an ACL,
+and (iii) authorize a per-recipient decryption. This is a narrow interface:</p>
+<pre>ConfidentialBackend:
+  encrypt(m)            -> (handle, proof)
+  transfer(from, to, h) -> ()     // ACL-gated
+  grant(h, addr)        -> ()     // extend ACL
+  userDecrypt(addr, h)  -> m      // authorized only</pre>
+<p>FHE (Zama / ERC-7984) is the instantiation used here. An MPC backend (secret-shared
+amounts with a committee performing the transfer and selective reveal) satisfies the same
+interface. Veil is therefore an <span class="kw">application-layer payments protocol</span>,
+not a compute network: it composes with whatever confidential-compute substrate is
+available. This is the axis on which Veil is complementary to&mdash;not competing
+with&mdash;general MPC networks such as Arcium.</p>
+
+<h2>Implementation &amp; Deployment</h2>
+<p><span class="kw">Contracts.</span> <code>ConfidentialDisperse.sol</code> (Solidity, FHEVM)
+reuses the canonical ERC-5564 announcer and operates over the official ERC-7984 cToken from
+the Zama Wrappers Registry, integrating the TokenOps SDK for the distribution primitive.
+<span class="kw">Client.</span> TypeScript with <code>@zama-fhe/relayer-sdk</code> for input
+encryption and EIP-712 user decryption, and <code>@noble/curves</code> for ECDH and
+stealth-key derivation. The contract carries no FHE state and no funds custody
+(pull-then-push within one transaction).</p>
+<p><span class="kw">Live deployment (Sepolia).</span> The protocol is deployed and verified
+end-to-end. In a representative run, a single <code>disperse</code> transaction paid two
+independent stealth recipients encrypted amounts of 300 and 700 cUSDT; each recipient,
+holding only its stealth key, decrypted <em>only its own</em> allocation through the
+EIP-712 flow, and a cross-decryption attempt by the other recipient failed as expected.</p>
+<div class="caption-tbl">Sepolia deployment artifacts (verifiable onchain).</div>
+<table>
+<tr><th>Artifact</th><th>Address / hash</th></tr>
+<tr><td>ConfidentialDisperse</td><td class="mono">0xB6E0497dfD8FDbfFB25F6AE3DC8104c46bBE8329</td></tr>
+<tr><td>ERC-7984 cUSDT (official)</td><td class="mono">0x4E7B06D78965594eB5EF5414c357ca21E1554491</td></tr>
+<tr><td>ERC-5564 Announcer</td><td class="mono">0x55649E01B5Df198D18D95b5cc5051630cfD45564</td></tr>
+<tr><td>Disperse&rarr;claim tx</td><td class="mono">0x1e19e6a404a403fb4f39090ac954480e06e6ceb752119e3de760f2a8048786ef</td></tr>
+</table>
+
+<h2>Evaluation</h2>
+<p>We characterize three quantities: (i) gas per recipient for <code>disperse</code> as a
+function of batch size; (ii) recipient scan time versus announcement volume, with and
+without view tags; and (iii) FHE batch limits, which bound the maximum recipients per
+transaction. At demo scale (5&ndash;10 recipients) a single transaction suffices; the view
+tag reduces recipient-side elliptic-curve work by a factor of ~256. A full quantitative
+evaluation is deferred to an extended version.</p>
+
+<h2>Related Work</h2>
+<p><span class="kw">Combining FHE with stealth addresses is not new.</span> HE-DKSAP and
+FHE-DKSAP (Dual-Key Stealth Address Protocols via (fully) homomorphic encryption, 2023)
+apply homomorphic encryption to the <em>stealth-address key exchange itself</em>, hardening
+recipient-address derivation. Veil differs in purpose and architecture: it applies FHE to
+the <span class="kw">transfer amount</span> (via ERC-7984) and uses standard ECDH stealth
+addresses (ERC-5564) for the <span class="kw">recipient</span>, rather than encrypting the
+key exchange. Veil's contribution is <em>applied and systems-level</em>&mdash;a deployed
+confidential-distribution protocol with a self-service claim flow&mdash;not a new
+primitive.</p>
+<p>Other related work: Umbra (stealth payments, amounts public); Tornado Cash / Privacy
+Pools (mixers, fungible-set anonymity); Zcash and Aztec (shielded pools); Fairblock and
+threshold-encryption mempools; Arcium (general MPC compute network, a <em>backend</em> in
+our &sect;7 abstraction rather than a competitor).</p>
+
+<h2>Limitations &amp; Future Work</h2>
+<p>Count leakage absent decoy padding; sender anonymity requires relayers; view-tag
+scanning cost grows with announcement volume (amortizable via indexers); a formal
+game-based proof of the combined construction is left to an extended version.</p>
+
+<h2>Conclusion</h2>
+<p>Veil shows that hiding <em>who</em> and <em>how much</em> in onchain distributions is
+achievable today by composing two mature standards, and demonstrates it with a live Sepolia
+deployment. Its backend abstraction positions confidential distribution as a portable
+protocol rather than a property of any single cryptographic substrate.</p>
+
+<h2>References</h2>
+<p class="small">
+[1] ERC-7984: Confidential Fungible Token Standard.&ensp;
+[2] ERC-5564: Stealth Addresses.&ensp;
+[3] ERC-6538: Stealth Meta-Address Registry.&ensp;
+[4] EIP-712: Typed Structured Data Hashing and Signing.&ensp;
+[5] I. Chillotti et al. TFHE: Fast Fully Homomorphic Encryption over the Torus. J. Cryptology, 2020.&ensp;
+[6] Zama Protocol Litepaper, 2024&ndash;2026.&ensp;
+[7] HE-DKSAP / FHE-DKSAP: Dual-Key Stealth Address Protocols via Homomorphic Encryption, 2023.&ensp;
+[8] ScopeLift. Umbra: Stealth Payments on Ethereum.&ensp;
+[9] Arcium: Confidential Computing Network. Documentation.
+</p>
+
+</div>
+</body>
+</html>
