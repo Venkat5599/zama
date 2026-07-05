@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title IERC6538Registry — stealth meta-address registry.
-/// @notice Recipients register their meta-address (spending + viewing public
-///         keys) once so senders can resolve them by identity.
+/// @notice ERC-6538 Stealth Meta-Address Registry (standard singleton).
+/// Maps an identity (address / registrant) to its published stealth
+/// meta-address = compressed spending pubkey || compressed viewing pubkey.
 interface IERC6538Registry {
-    /// @param registrant the recipient's identity (address or other id).
-    /// @param schemeId    cryptographic scheme (1 = secp256k1).
-    /// @return the registered stealth meta-address bytes, or empty if unset.
+    event StealthMetaAddressSet(
+        bytes indexed registrant,
+        uint256 indexed schemeId,
+        bytes stealthMetaAddress
+    );
+
     function stealthMetaAddressOf(
         bytes memory registrant,
         uint256 schemeId
@@ -15,6 +18,6 @@ interface IERC6538Registry {
 
     function registerKeys(
         uint256 schemeId,
-        bytes calldata stealthMetaAddress
+        bytes memory stealthMetaAddress
     ) external;
 }

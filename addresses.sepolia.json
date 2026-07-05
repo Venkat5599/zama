@@ -1,0 +1,8 @@
+{
+  "note": "Sepolia addresses. cToken = official ERC-7984 from Zama Wrappers Registry. Fill after spike/deploy.",
+  "chainId": 11155111,
+  "confidentialDisperse": "",
+  "cToken": "",
+  "erc5564Announcer": "",
+  "erc6538Registry": ""
+}

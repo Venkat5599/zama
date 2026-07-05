@@ -34,7 +34,9 @@ veil/
 
 ## Status
 
-Pre-build. Week-1 spike pending: prove `FHE.allow` → stealth address → EIP-712 decrypt end-to-end on Sepolia before writing UI.
+**Contracts + crypto + frontend built and green.** `ConfidentialDisperse.sol` + FHEVM-mock tests (6 passing) prove the core invariant — two stealth recipients each decrypt only their own slice, cross-read rejected. Stealth lib (`lib/stealth.ts`, ERC-5564 scheme 1) roundtrip-tested. Next.js dApp (`/register`, `/send`, `/claim`) builds clean.
+
+Spike resolved: the **ERC-7984 token owns the transfer + FHE-ACL** — `_update` grants the fresh stealth address decrypt rights automatically, so no manual `FHE.allow` is needed and the funds-lock risk is eliminated. Remaining: live Sepolia deploy + `scripts/spike.ts` confirmation, then video + arXiv. See `TODO.md`.
 
 ## Deliverables for the bounty
 
