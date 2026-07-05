@@ -4,22 +4,24 @@ export const siteConfig = {
   name: "Veil - Confidential Disperse",
   description:
     "Private token distribution on public chains. Hide how much (Zama FHE) and who (stealth addresses).",
-  url: "https://example.com",
+  url: "https://veil-fhe.vercel.app",
   ogImage: "/og-image.png",
-  creator: "@yourhandle",
+  creator: "@zama_fhe",
   authors: [
     {
-      name: "Your Name",
-      url: "https://example.com",
+      name: "Veil",
+      url: "https://github.com/Venkat5599/zama",
     },
   ],
   keywords: [
-    "landing page",
-    "template",
-    "Next.js",
-    "React",
-    "Tailwind CSS",
-    "TypeScript",
+    "FHE",
+    "Zama",
+    "FHEVM",
+    "confidential transactions",
+    "stealth addresses",
+    "ERC-7984",
+    "ERC-5564",
+    "private payments",
   ],
 } as const;
 

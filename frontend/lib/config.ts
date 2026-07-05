@@ -9,13 +9,13 @@
 
 export const siteConfig = {
   // Brand
-  name: "Circular",
-  tagline: "Build Faster, Ship with Confidence",
-  description: "The modern platform for teams who want to move fast without breaking things",
-  
+  name: "Veil",
+  tagline: "Hide the amount and the recipient",
+  description: "Confidential token distribution on public chains — FHE amounts (ERC-7984) plus stealth recipients (ERC-5564), live on Zama FHEVM.",
+
   // URLs
-  url: "https://example.com",
-  twitter: "@circular",
+  url: "https://veil-fhe.vercel.app",
+  twitter: "@zama_fhe",
   
   // Navigation
   nav: {

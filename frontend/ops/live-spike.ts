@@ -1,7 +1,7 @@
 // REAL onchain spike on Sepolia: relayer-encrypted disperse to 2 stealth
 // recipients, then relayer user-decrypt proves each sees only its own amount.
 import { readFileSync } from "node:fs";
-import { JsonRpcProvider, Wallet, Contract, hexlify, getBytes } from "ethers";
+import { JsonRpcProvider, Wallet, Contract, hexlify } from "ethers";
 import { createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/node";
 import {
   generateStealthKeys,
@@ -13,7 +13,6 @@ import {
 const RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 const DISPERSE = "0xB6E0497dfD8FDbfFB25F6AE3DC8104c46bBE8329";
 const CUSDT = "0x4E7B06D78965594eB5EF5414c357ca21E1554491";
-const ANNOUNCER = "0x55649E01B5Df198D18D95b5cc5051630cfD45564";
 const MAX48 = 281474976710655;
 
 const disperseAbi = [

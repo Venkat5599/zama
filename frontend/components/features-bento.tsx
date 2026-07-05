@@ -297,7 +297,7 @@ function IntegrationsCard(): ReactNode {
 
       <div className="mt-6 flex flex-col gap-2 transition-transform duration-500 ease-out group-hover:scale-[1.02]">
         {DEPLOYMENT_STATS.map((stat) => (
-          <DeploymentStat key={stat.icon} {...stat} />
+          <DeploymentStat key={stat.label} {...stat} />
         ))}
       </div>
     </motion.div>
