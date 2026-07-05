@@ -1,8 +1,10 @@
 {
-  "note": "Sepolia addresses. cToken = official ERC-7984 from Zama Wrappers Registry. Fill after spike/deploy.",
+  "note": "Sepolia. cToken/registry/underlying = official Zama Wrappers Registry mocks. announcer = canonical ERC-5564.",
   "chainId": 11155111,
-  "confidentialDisperse": "",
-  "cToken": "",
-  "erc5564Announcer": "",
+  "confidentialDisperse": "0xB6E0497dfD8FDbfFB25F6AE3DC8104c46bBE8329",
+  "cToken": "0x4E7B06D78965594eB5EF5414c357ca21E1554491",
+  "underlyingUsdt": "0xa7dA08FafDC9097Cc0E7D4f113A61e31d7e8e9b0",
+  "wrappersRegistry": "0x2f0750Bbb0A246059d80e94c454586a7F27a128e",
+  "erc5564Announcer": "0x55649E01B5Df198D18D95b5cc5051630cfD45564",
   "erc6538Registry": ""
 }
