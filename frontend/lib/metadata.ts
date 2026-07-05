@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: "React Bits Pro - SaaS Template",
+  name: "Veil — Confidential Disperse",
   description:
-    "A modern, accessible landing page template built with Next.js, Tailwind CSS, and TypeScript.",
+    "Private token distribution on public chains. Hide how much (Zama FHE) and who (stealth addresses).",
   url: "https://example.com",
   ogImage: "/og-image.png",
   creator: "@yourhandle",

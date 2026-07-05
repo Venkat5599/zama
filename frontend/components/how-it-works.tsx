@@ -8,21 +8,21 @@ import type { ReactNode } from "react";
 const steps = [
   {
     icon: CalendarCheck,
-    title: "Schedule kickoff",
+    title: "Register",
     description:
-      "Align on scope, structure, and timeline. Whether it's a quick setup or a full migration, we'll take it from there.",
+      "Generate spending and viewing keys once and publish a stealth meta-address to the ERC-6538 registry. Keys never leave your browser.",
   },
   {
     icon: Users,
-    title: "Real-time collaboration",
+    title: "Send",
     description:
-      "Work alongside our team with full visibility. Every step follows best practices and thorough QA to ensure quality.",
+      "Upload recipients, encrypt each amount with FHE in your browser, derive one-time stealth addresses, and disperse in a single transaction.",
   },
   {
     icon: Rocket,
-    title: "Launch and scale",
+    title: "Claim",
     description:
-      "Go live with confidence. Our AI continuously learns and improves, helping your team scale effortlessly.",
+      "Recipients scan announcements with their viewing key, detect their payment, and decrypt only their own slice via EIP-712 user decryption.",
   },
 ];
 
@@ -74,9 +74,9 @@ export function HowItWorks(): ReactNode {
             How it works
           </h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-foreground/60">
-            Your platform, configured by experts and launched on an{" "}
-            <span className="font-medium text-foreground">Enterprise plan</span>
-            , ready to grow with you.
+            Three steps for confidential distribution: publish your keys, disperse encrypted amounts to stealth addresses, and claim{" "}
+            <span className="font-medium text-foreground">only your own slice</span>
+            .
           </p>
           <motion.a
             href="#"
@@ -84,7 +84,7 @@ export function HowItWorks(): ReactNode {
             whileTap={{ scale: 0.98 }}
             className="mt-8 inline-flex items-center rounded-xl bg-foreground px-6 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
           >
-            Schedule kickoff
+            Launch app
           </motion.a>
         </div>
 

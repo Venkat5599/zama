@@ -6,16 +6,16 @@ import { useState, type ReactNode } from "react";
 
 const menus = {
   products: [
-    { label: "Analytics", description: "Track your metrics in real-time" },
-    { label: "Automation", description: "Streamline your workflows" },
-    { label: "Integrations", description: "Connect with 100+ tools" },
-    { label: "API", description: "Build custom solutions" },
+    { label: "Confidential Disperse", description: "Encrypted amounts to stealth addresses" },
+    { label: "Stealth Addresses", description: "One-time unlinkable recipients (ERC-5564)" },
+    { label: "FHE Amounts", description: "euint64 ciphertext balances (ERC-7984)" },
+    { label: "Claim Portal", description: "Decrypt only your own slice" },
   ],
   resources: [
-    { label: "Documentation", description: "Learn how to get started" },
-    { label: "Blog", description: "Tips and best practices" },
-    { label: "Case Studies", description: "See how others succeed" },
-    { label: "Community", description: "Join the conversation" },
+    { label: "Whitepaper", description: "Protocol and security analysis" },
+    { label: "Architecture", description: "How Veil is built" },
+    { label: "Prior Art", description: "FHE-DKSAP and related work" },
+    { label: "Zama Program", description: "Season 3 bounty track" },
   ],
 };
 
@@ -162,25 +162,25 @@ export function Header(): ReactNode {
       <div className="h-20 max-[850px]:h-18 flex items-center justify-between px-4 max-[850px]:px-6">
         <a href="#" className="flex items-center gap-2 ml-4 max-[850px]:ml-0">
           <div className="w-6 h-6 rounded-full bg-foreground" />
-          <span className="text-lg font-semibold text-foreground leading-0 max-[1200px]:hidden max-[850px]:inline">Circular</span>
+          <span className="text-lg font-semibold text-foreground leading-0 max-[1200px]:hidden max-[850px]:inline">Veil</span>
         </a>
 
         <nav className="flex items-center gap-1 max-[1200px]:gap-0 max-[850px]:hidden">
           <DesktopDropdown
-            label="Products"
+            label="Protocol"
             menuKey="products"
             isOpen={activeMenu === "products"}
             onOpen={() => setActiveMenu("products")}
             onClose={() => setActiveMenu(null)}
           />
           <DesktopDropdown
-            label="Resources"
+            label="Learn"
             menuKey="resources"
             isOpen={activeMenu === "resources"}
             onOpen={() => setActiveMenu("resources")}
             onClose={() => setActiveMenu(null)}
           />
-          <a href="#pricing" className="px-4 py-2 max-[1200px]:px-3 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors rounded-full hover:bg-foreground/5">
+          <a href="/dashboard/send" className="px-4 py-2 max-[1200px]:px-3 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors rounded-full hover:bg-foreground/5">
             Pricing
           </a>
         </nav>
@@ -189,9 +189,9 @@ export function Header(): ReactNode {
           <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
             Sign in
           </a>
-          <a href="#" className="group relative inline-flex items-center">
+          <a href="/dashboard/send" className="group relative inline-flex items-center">
             <span className="absolute right-0 inset-y-0 w-[calc(100%-1.5rem)] rounded-xl bg-accent" />
-            <span className="relative z-10 px-5 py-3 rounded-xl bg-foreground text-background text-sm font-medium">Try for free</span>
+            <span className="relative z-10 px-5 py-3 rounded-xl bg-foreground text-background text-sm font-medium">Launch app</span>
             <span className="relative -left-px z-10 w-10 h-10 rounded-xl flex items-center justify-center text-black">
               <ArrowDownRight className="w-4 h-4 transition-transform duration-300 group-hover:-rotate-45" />
             </span>
@@ -220,23 +220,23 @@ export function Header(): ReactNode {
             <div className="px-6 pb-4">
               <nav className="space-y-0">
                 <a href="#" className="flex items-center justify-between py-4 text-base font-medium text-foreground border-b border-foreground/10" onClick={closeMobile}>
-                  Customers
+                  Home
                 </a>
                 <MobileExpandable
-                  label="Products"
+                  label="Protocol"
                   menuKey="products"
                   isExpanded={mobileExpanded === "products"}
                   onToggle={() => toggleExpanded("products")}
                   onClose={closeMobile}
                 />
                 <MobileExpandable
-                  label="Resources"
+                  label="Learn"
                   menuKey="resources"
                   isExpanded={mobileExpanded === "resources"}
                   onToggle={() => toggleExpanded("resources")}
                   onClose={closeMobile}
                 />
-                <a href="#pricing" className="flex items-center justify-between py-4 text-base font-medium text-foreground" onClick={closeMobile}>
+                <a href="/dashboard/send" className="flex items-center justify-between py-4 text-base font-medium text-foreground" onClick={closeMobile}>
                   Pricing
                 </a>
               </nav>
@@ -247,7 +247,7 @@ export function Header(): ReactNode {
                 </a>
                 <a href="#" className="group relative inline-flex items-center" onClick={closeMobile}>
                   <span className="absolute right-0 inset-y-0 w-[calc(100%-1.5rem)] rounded-2xl bg-accent" />
-                  <span className="relative z-10 px-5 py-3 rounded-2xl bg-foreground text-background text-sm font-medium">Try for free</span>
+                  <span className="relative z-10 px-5 py-3 rounded-2xl bg-foreground text-background text-sm font-medium">Launch app</span>
                   <span className="relative -left-px z-10 w-10 h-10 rounded-2xl flex items-center justify-center text-foreground">
                     <ArrowDownRight className="w-4 h-4 transition-transform duration-300 group-hover:-rotate-45" />
                   </span>

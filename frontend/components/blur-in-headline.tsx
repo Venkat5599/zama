@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 const headline =
-  "Modern teams use our platform to elevate every customer touchpoint, blending human expertise with AI capabilities in a unified system that drives continuous improvement across all channels.";
+  "Veil encrypts the amount with fully homomorphic encryption and hides the recipient behind a one-time stealth address, so onchain observers learn neither how much you paid nor who you paid.";
 
 export function BlurInHeadline(): ReactNode {
   const containerRef = useRef<HTMLDivElement>(null);
