@@ -2,21 +2,18 @@
 
 import { motion, type Transition } from "motion/react";
 import { CircleCheck, Star } from "lucide-react";
-import Image from "next/image";
 import type { ReactNode } from "react";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
-const AVATAR_URLS = [
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+const LAYER_BADGES = [
+  { short: "FHE", label: "amount" },
+  { short: "5564", label: "recipient" },
 ];
 
 const DEPLOYMENT_STATS = [
-  { icon: "🚀", label: "2,598 Deploys", change: "+24%" },
-  { icon: "⚡", label: "99.9% Uptime", change: "+0.2%" },
+  { icon: "🔒", label: "Encrypted amounts", change: "FHE" },
+  { icon: "🕶", label: "Stealth recipients", change: "ERC-5564" },
 ];
 
 const cardAnimation = {
@@ -65,23 +62,15 @@ function PhoneMockup({
 function AvatarStack(): ReactNode {
   return (
     <div className="flex items-center">
-      {AVATAR_URLS.map((src, i) => (
+      {LAYER_BADGES.map((b, i) => (
         <div
           key={i}
-          className="size-12 rounded-full border-2 border-white/25 overflow-hidden -ml-4 first:ml-0"
+          className="size-12 rounded-full border-2 border-white/25 bg-accent text-black flex flex-col items-center justify-center -ml-4 first:ml-0"
         >
-          <Image
-            src={src}
-            alt=""
-            width={48}
-            height={48}
-            className="size-full object-cover"
-          />
+          <span className="text-[11px] font-semibold leading-none">{b.short}</span>
+          <span className="text-[7px] leading-none mt-0.5">{b.label}</span>
         </div>
       ))}
-      <div className="size-12 rounded-full border-2 border-white/25 bg-accent text-black flex items-center justify-center text-sm font-semibold -ml-4">
-        5+
-      </div>
     </div>
   );
 }
@@ -125,10 +114,10 @@ function StepByStepCard(): ReactNode {
     >
       <div className="relative z-10 text-center mb-6 transition-transform duration-500 ease-out group-hover:scale-105">
         <h3 className="text-2xl md:text-4xl font-medium text-neutral-900 leading-tight mb-3">
-          Guided Onboarding For Every Team
+          Confidential By Default
         </h3>
         <p className="text-neutral-700 text-sm">
-          Get your team up and running in minutes with step-by-step walkthroughs
+          Amounts encrypted with FHE, recipients hidden behind one-time stealth addresses
         </p>
       </div>
 
@@ -136,13 +125,13 @@ function StepByStepCard(): ReactNode {
         <PhoneMockup variant="full">
           <div className="absolute inset-0 bg-phone-screen pt-14 px-5">
             <h4 className="text-3xl font-medium text-neutral-900 leading-none tracking-tight mt-4">
-              Your workspace
+              Your own
             </h4>
             <h4 className="text-3xl font-medium text-neutral-900 leading-none tracking-tight mb-4">
-              is ready!
+              slice
             </h4>
             <p className="text-sm text-neutral-500 leading-snug mb-8">
-              Invite your team and start collaborating instantly.
+              Only you can decrypt the amount sent to your stealth address.
             </p>
 
             {/* Project Card */}
@@ -207,10 +196,10 @@ function DashboardCard(): ReactNode {
     >
       <div className="relative z-10 max-w-48 transition-transform duration-500 ease-out group-hover:scale-105">
         <h3 className="text-xl md:text-2xl whitespace-nowrap font-medium text-card-foreground leading-tight mb-3">
-          Real-time Data
+          Scan and Claim
         </h3>
         <p className="text-card-foreground-muted text-sm">
-          Monitor metrics, analytics, and team activity instantly
+          Scan announcements, detect your payment, decrypt only your slice
         </p>
       </div>
 
@@ -222,8 +211,8 @@ function DashboardCard(): ReactNode {
             <div className="bg-white rounded-full px-2 py-1.5 mb-3 flex items-center gap-1.5 border border-neutral-200">
               <span className="text-neutral-400 text-xs">Search projects...</span>
             </div>
-            <p className="text-xs text-neutral-500 mb-0.5">Active projects</p>
-            <p className="text-xl font-medium text-neutral-900 mb-3">24 running</p>
+            <p className="text-xs text-neutral-500 mb-0.5">Announcements</p>
+            <p className="text-xl font-medium text-neutral-900 mb-3">scanning</p>
 
             <div className="flex gap-1.5 mb-4">
               <span className="bg-accent text-black text-xs px-2.5 py-1 rounded-full">
@@ -261,10 +250,10 @@ function TrustedByCard(): ReactNode {
     >
       <div className="transition-transform duration-500 ease-out group-hover:scale-110">
         <h3 className="text-2xl md:text-3xl font-medium text-card-foreground leading-tight mb-1">
-          Trusted By
+          Hides Both
         </h3>
         <h3 className="text-2xl md:text-3xl font-medium text-card-foreground leading-tight mb-5">
-          254k+ Users
+          Amount and Who
         </h3>
       </div>
 
@@ -274,7 +263,7 @@ function TrustedByCard(): ReactNode {
 
       <div className="flex items-center gap-2 mt-5 text-card-foreground-muted transition-transform duration-500 ease-out group-hover:scale-105">
         <Star className="size-4 fill-current" />
-        <span className="text-xs font-medium">4.9 from 48k+ reviews</span>
+        <span className="text-xs font-medium">Two independent privacy layers</span>
       </div>
     </motion.div>
   );
@@ -289,10 +278,10 @@ function IntegrationsCard(): ReactNode {
     >
       <div className="mb-auto transition-transform duration-500 ease-out group-hover:scale-105">
         <h3 className="text-xl md:text-2xl font-medium text-neutral-900 leading-tight mb-2">
-          Built to Scale
+          Built for Sepolia
         </h3>
         <p className="text-neutral-700 text-sm">
-          Enterprise-ready infrastructure that grows with you
+          Demo-scale confidential disperse: 5-10 recipients per transaction
         </p>
       </div>
 
