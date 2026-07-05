@@ -156,7 +156,7 @@ export default function SendPage() {
   const busy = phase !== "idle" && phase !== "done" && phase !== "error";
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 pt-32 pb-32 sm:px-8">
+    <main className="mx-auto w-full max-w-3xl px-5 pt-12 pb-24 sm:px-8">
       <PageHeader
         eyebrow="Distributor"
         title="Confidential disperse"

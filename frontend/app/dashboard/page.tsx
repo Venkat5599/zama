@@ -24,7 +24,7 @@ const routes = [
 
 export default function DashboardHome() {
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 pt-32 pb-32 sm:px-8">
+    <main className="mx-auto w-full max-w-4xl px-5 pt-12 pb-24 sm:px-8">
       <PageHeader
         eyebrow="Veil dApp"
         title="Confidential disperse"
