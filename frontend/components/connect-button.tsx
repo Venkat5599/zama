@@ -15,9 +15,9 @@ export function ConnectButton(): React.ReactNode {
     return (
       <button
         onClick={() => disconnect()}
-        className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/5"
+        className="border-border bg-muted text-foreground hover:bg-foreground/5 inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+        <span className="bg-accent h-1.5 w-1.5 rounded-full" />
         <span className="font-mono text-xs">{short(address)}</span>
       </button>
     );
@@ -27,8 +27,8 @@ export function ConnectButton(): React.ReactNode {
       onClick={() => connect({ connector: injected() })}
       className="group relative inline-flex items-center"
     >
-      <span className="absolute inset-y-0 right-0 w-[calc(100%-1.5rem)] rounded-xl bg-accent" />
-      <span className="relative z-10 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background">
+      <span className="bg-accent absolute inset-y-0 right-0 w-[calc(100%-1.5rem)] rounded-xl" />
+      <span className="bg-foreground text-background relative z-10 rounded-xl px-5 py-3 text-sm font-medium">
         Connect
       </span>
     </button>

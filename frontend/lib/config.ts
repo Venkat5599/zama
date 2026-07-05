@@ -9,13 +9,13 @@
 
 export const siteConfig = {
   // Brand
-  name: "Veil",
-  tagline: "Confidential Disperse Protocol",
-  description: "Private token distribution on public chains. Hide how much (FHE) and who (stealth addresses).",
+  name: "Circular",
+  tagline: "Build Faster, Ship with Confidence",
+  description: "The modern platform for teams who want to move fast without breaking things",
   
   // URLs
   url: "https://example.com",
-  twitter: "@veil",
+  twitter: "@circular",
   
   // Navigation
   nav: {
@@ -89,7 +89,7 @@ export const footerConfig = {
     placeholder: "Enter your email",
     button: "Join Waitlist",
   },
-  copyright: `© ${new Date().getFullYear()} Veil. All rights reserved.`,
+  copyright: `© ${new Date().getFullYear()} Circular. All rights reserved.`,
 };
 
 /**

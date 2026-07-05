@@ -6,7 +6,15 @@ import { ADDRESSES, announcerAbi, cTokenAbi, SCHEME_ID } from "@/lib/chain";
 import { checkStealthAddress, type StealthKeys } from "@/lib/stealth";
 import { loadKeys } from "@/lib/storage";
 import { getFhe } from "@/lib/fhe";
-import { Card, PageHeader, PrimaryButton, GhostButton, Field, Mono, inputClass } from "@/components/app-ui";
+import {
+  Card,
+  PageHeader,
+  PrimaryButton,
+  GhostButton,
+  Field,
+  Mono,
+  inputClass,
+} from "@/components/app-ui";
 
 const START_BLOCK = BigInt(process.env.NEXT_PUBLIC_FROM_BLOCK ?? "0");
 
@@ -23,21 +31,30 @@ export default function ClaimPage() {
   const publicClient = usePublicClient();
   const [keys, setKeys] = useState<StealthKeys | null>(null);
   const [manual, setManual] = useState({ spend: "", view: "" });
-  const [phase, setPhase] = useState<"idle" | "scanning" | "done" | "error">("idle");
+  const [phase, setPhase] = useState<"idle" | "scanning" | "done" | "error">(
+    "idle"
+  );
   const [funnel, setFunnel] = useState<Funnel>({ scanned: 0, owned: 0 });
   const [found, setFound] = useState<Found[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => setKeys(loadKeys()), []);
 
-  function activeKeys(): { spendPriv: string; spendPub: string; viewPriv: string } | null {
+  function activeKeys(): {
+    spendPriv: string;
+    spendPub: string;
+    viewPriv: string;
+  } | null {
     if (keys)
       return {
         spendPriv: keys.spendingPrivateKey,
         spendPub: keys.spendingPublicKey,
         viewPriv: keys.viewingPrivateKey,
       };
-    if (/^0x[0-9a-fA-F]{64}$/.test(manual.spend) && /^0x[0-9a-fA-F]{64}$/.test(manual.view)) {
+    if (
+      /^0x[0-9a-fA-F]{64}$/.test(manual.spend) &&
+      /^0x[0-9a-fA-F]{64}$/.test(manual.view)
+    ) {
       const spendPub = new Wallet(manual.spend).signingKey.compressedPublicKey;
       return { spendPriv: manual.spend, spendPub, viewPriv: manual.view };
     }
@@ -96,7 +113,9 @@ export default function ClaimPage() {
   async function decrypt(index: number, list: Found[]) {
     const item = list[index];
     if (!item) return;
-    setFound((prev) => prev.map((f, i) => (i === index ? { ...f, decrypting: true } : f)));
+    setFound((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, decrypting: true } : f))
+    );
     try {
       if (!publicClient) throw new Error("no client");
       const handle = (await publicClient.readContract({
@@ -110,7 +129,12 @@ export default function ClaimPage() {
       const { publicKey, privateKey } = fhe.generateKeypair();
       const start = Math.floor(Date.now() / 1000);
       const days = 1;
-      const eip712 = fhe.createEIP712(publicKey, [ADDRESSES.cToken], start, days);
+      const eip712 = fhe.createEIP712(
+        publicKey,
+        [ADDRESSES.cToken],
+        start,
+        days
+      );
 
       const wallet = new Wallet(item.stealthPrivateKey);
       const types = { ...(eip712.types as Record<string, unknown>) };
@@ -131,15 +155,23 @@ export default function ClaimPage() {
         start,
         days
       );
-      const clear = BigInt(res[handle as `0x${string}`] as string | number | bigint);
+      const clear = BigInt(
+        res[handle as `0x${string}`] as string | number | bigint
+      );
       setFound((prev) =>
-        prev.map((f, i) => (i === index ? { ...f, amount: clear, decrypting: false } : f))
+        prev.map((f, i) =>
+          i === index ? { ...f, amount: clear, decrypting: false } : f
+        )
       );
     } catch (e: any) {
       setFound((prev) =>
         prev.map((f, i) =>
           i === index
-            ? { ...f, decrypting: false, error: e?.shortMessage ?? e?.message ?? "decrypt failed" }
+            ? {
+                ...f,
+                decrypting: false,
+                error: e?.shortMessage ?? e?.message ?? "decrypt failed",
+              }
             : f
         )
       );
@@ -149,7 +181,7 @@ export default function ClaimPage() {
   const ready = !!activeKeys();
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 pb-32 pt-32 sm:px-8">
+    <main className="mx-auto w-full max-w-2xl px-5 pt-32 pb-32 sm:px-8">
       <PageHeader
         eyebrow="Recipient"
         title="Claim portal"
@@ -158,16 +190,20 @@ export default function ClaimPage() {
 
       {!keys && (
         <Card className="mb-4 space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             No keys found on this device.{" "}
-            <a href="/register" className="text-foreground underline">Register</a>{" "}
+            <a href="/dashboard/register" className="text-foreground underline">
+              Register
+            </a>{" "}
             to generate them, or paste your private keys to scan on this device.
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Spending private key">
               <input
                 value={manual.spend}
-                onChange={(e) => setManual((m) => ({ ...m, spend: e.target.value.trim() }))}
+                onChange={(e) =>
+                  setManual((m) => ({ ...m, spend: e.target.value.trim() }))
+                }
                 placeholder="0x... 64 hex"
                 className={inputClass + " font-mono"}
               />
@@ -175,7 +211,9 @@ export default function ClaimPage() {
             <Field label="Viewing private key">
               <input
                 value={manual.view}
-                onChange={(e) => setManual((m) => ({ ...m, view: e.target.value.trim() }))}
+                onChange={(e) =>
+                  setManual((m) => ({ ...m, view: e.target.value.trim() }))
+                }
                 placeholder="0x... 64 hex"
                 className={inputClass + " font-mono"}
               />
@@ -193,7 +231,11 @@ export default function ClaimPage() {
           <div className="grid grid-cols-3 gap-3 text-center">
             <Funnelstat label="Announcements" value={funnel.scanned} />
             <Funnelstat label="Mine" value={funnel.owned} accent />
-            <Funnelstat label="Decrypted" value={found.filter((f) => f.amount != null).length} accent />
+            <Funnelstat
+              label="Decrypted"
+              value={found.filter((f) => f.amount != null).length}
+              accent
+            />
           </div>
         )}
         {err && <p className="text-xs text-red-500">{err}</p>}
@@ -201,12 +243,13 @@ export default function ClaimPage() {
 
       {phase === "done" && found.length === 0 && (
         <Card className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            No payments found for these keys yet. If a sender just paid you, wait for the block to
-            settle and scan again, or double-check you shared the right meta-address.
+          <p className="text-muted-foreground text-sm">
+            No payments found for these keys yet. If a sender just paid you,
+            wait for the block to settle and scan again, or double-check you
+            shared the right meta-address.
           </p>
           <div className="mt-4 flex justify-center">
-            <GhostButton href="/register">My meta-address</GhostButton>
+            <GhostButton href="/dashboard/register">My meta-address</GhostButton>
           </div>
         </Card>
       )}
@@ -220,11 +263,26 @@ export default function ClaimPage() {
   );
 }
 
-function Funnelstat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function Funnelstat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
   return (
-    <div className="rounded-2xl border border-border bg-background p-4">
-      <div className={"text-3xl font-semibold " + (accent ? "text-accent" : "text-foreground")}>{value}</div>
-      <div className="mt-1 text-[11px] text-muted-foreground">{label}</div>
+    <div className="border-border bg-background rounded-2xl border p-4">
+      <div
+        className={
+          "text-3xl font-semibold " +
+          (accent ? "text-accent" : "text-foreground")
+        }
+      >
+        {value}
+      </div>
+      <div className="text-muted-foreground mt-1 text-[11px]">{label}</div>
     </div>
   );
 }
@@ -238,13 +296,15 @@ function RevealCard({ found, onRetry }: { found: Found; onRetry: () => void }) {
       </Field>
       {found.amount != null ? (
         <div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Your amount</div>
-          <div className="mt-1 text-6xl font-semibold tabular-nums text-foreground">
+          <div className="text-muted-foreground text-[10px] tracking-[0.2em] uppercase">
+            Your amount
+          </div>
+          <div className="text-foreground mt-1 text-6xl font-semibold tabular-nums">
             {shown.toLocaleString()}
           </div>
         </div>
       ) : found.decrypting ? (
-        <div className="h-14 w-40 animate-pulse rounded-2xl bg-muted" />
+        <div className="bg-muted h-14 w-40 animate-pulse rounded-2xl" />
       ) : found.error ? (
         <div className="space-y-2">
           <p className="text-xs text-red-500">{found.error}</p>

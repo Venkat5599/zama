@@ -1,4 +1,3 @@
-import { Header } from "@/components/header";
 import { Providers } from "@/components/providers";
 import { SkipToContent } from "@/components/skip-to-content";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -62,8 +61,6 @@ export default function RootLayout({
           <svg className="site-corner site-corner--bottom-right" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor"/>
           </svg>
-          
-          <Header />
           <ThemeSwitch />
           
           <SkipToContent />

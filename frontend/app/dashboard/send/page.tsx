@@ -3,13 +3,37 @@ import { useMemo, useState } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { hexlify } from "ethers";
 import { maxUint48 } from "viem";
-import { ADDRESSES, disperseAbi, cTokenAbi, registryAbi, SCHEME_ID } from "@/lib/chain";
-import { deriveStealthAddress, generateStealthKeys, encodeMetadata } from "@/lib/stealth";
+import {
+  ADDRESSES,
+  disperseAbi,
+  cTokenAbi,
+  registryAbi,
+  SCHEME_ID,
+} from "@/lib/chain";
+import {
+  deriveStealthAddress,
+  generateStealthKeys,
+  encodeMetadata,
+} from "@/lib/stealth";
 import { getFhe } from "@/lib/fhe";
-import { Card, PageHeader, PrimaryButton, Field, Step, Mono, inputClass } from "@/components/app-ui";
+import {
+  Card,
+  PageHeader,
+  PrimaryButton,
+  Field,
+  Step,
+  Mono,
+  inputClass,
+} from "@/components/app-ui";
 
-type Row = { raw: string; meta: string | null; amount: bigint | null; error?: string };
-type Phase = "idle" | "operator" | "derive" | "encrypt" | "submit" | "done" | "error";
+type Row = {
+  raw: string;
+  meta: string | null;
+  amount: bigint | null;
+  error?: string;
+};
+type Phase =
+  "idle" | "operator" | "derive" | "encrypt" | "submit" | "done" | "error";
 
 const META_RE = /^0x[0-9a-fA-F]{132}$/;
 const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -56,11 +80,15 @@ export default function SendPage() {
       const resolved: { meta: string; amount: bigint }[] = [];
       for (const r of valid) {
         const meta = await resolveMeta(r.meta!);
-        if (!meta) throw new Error(`Unregistered or invalid recipient: ${r.raw}`);
+        if (!meta)
+          throw new Error(`Unregistered or invalid recipient: ${r.raw}`);
         resolved.push({ meta, amount: r.amount! });
       }
       for (let i = 0; i < decoys; i++)
-        resolved.push({ meta: generateStealthKeys().stealthMetaAddress, amount: 0n });
+        resolved.push({
+          meta: generateStealthKeys().stealthMetaAddress,
+          amount: 0n,
+        });
 
       setPhase("operator");
       const isOp = (await publicClient.readContract({
@@ -91,16 +119,21 @@ export default function SendPage() {
         metadatas.push(encodeMetadata(p.viewTag) as `0x${string}`);
         if (resolved[i].amount > 0n)
           realLinks.push(
-            `${location.origin}/claim?a=${p.stealthAddress}&r=${p.ephemeralPublicKey}&v=${p.viewTag}`
+            `${location.origin}/dashboard/claim?a=${p.stealthAddress}&r=${p.ephemeralPublicKey}&v=${p.viewTag}`
           );
       }
 
       setPhase("encrypt");
       const fhe = await getFhe();
-      const input = fhe.createEncryptedInput(ADDRESSES.confidentialDisperse, address);
+      const input = fhe.createEncryptedInput(
+        ADDRESSES.confidentialDisperse,
+        address
+      );
       for (const r of resolved) input.add64(r.amount);
       const enc = await input.encrypt();
-      const handles = enc.handles.map((h: Uint8Array) => hexlify(h) as `0x${string}`);
+      const handles = enc.handles.map(
+        (h: Uint8Array) => hexlify(h) as `0x${string}`
+      );
       const proof = hexlify(enc.inputProof) as `0x${string}`;
 
       setPhase("submit");
@@ -123,7 +156,7 @@ export default function SendPage() {
   const busy = phase !== "idle" && phase !== "done" && phase !== "error";
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 pb-32 pt-32 sm:px-8">
+    <main className="mx-auto w-full max-w-3xl px-5 pt-32 pb-32 sm:px-8">
       <PageHeader
         eyebrow="Distributor"
         title="Confidential disperse"
@@ -131,7 +164,10 @@ export default function SendPage() {
       />
 
       <Card className="space-y-5">
-        <Field label="Recipients (CSV)" hint="Demo scale: 5-10 rows. FHE batch ops are costly.">
+        <Field
+          label="Recipients (CSV)"
+          hint="Demo scale: 5-10 rows. FHE batch ops are costly."
+        >
           <textarea
             value={csv}
             onChange={(e) => setCsv(e.target.value)}
@@ -151,45 +187,84 @@ export default function SendPage() {
               className={inputClass + " w-32"}
             />
           </Field>
-          <div className="pb-3 text-xs text-muted-foreground">
-            {valid.length} real{decoys > 0 ? ` + ${decoys} decoys (encrypted 0)` : ""}, {valid.length + decoys} total onchain
+          <div className="text-muted-foreground pb-3 text-xs">
+            {valid.length} real
+            {decoys > 0 ? ` + ${decoys} decoys (encrypted 0)` : ""},{" "}
+            {valid.length + decoys} total onchain
           </div>
         </div>
 
         {rows.some((r) => r.error) && (
           <div className="space-y-1 text-xs text-red-500">
-            {rows.filter((r) => r.error).map((r, i) => (
-              <div key={i}>- {r.raw || "(empty)"}: {r.error}</div>
-            ))}
+            {rows
+              .filter((r) => r.error)
+              .map((r, i) => (
+                <div key={i}>
+                  - {r.raw || "(empty)"}: {r.error}
+                </div>
+              ))}
           </div>
         )}
 
-        <PrimaryButton onClick={run} disabled={!isConnected || valid.length === 0 || busy}>
-          {busy ? "Working" : `Disperse to ${valid.length + decoys} recipient(s)`}
+        <PrimaryButton
+          onClick={run}
+          disabled={!isConnected || valid.length === 0 || busy}
+        >
+          {busy
+            ? "Working"
+            : `Disperse to ${valid.length + decoys} recipient(s)`}
         </PrimaryButton>
-        {!isConnected && <p className="text-xs text-muted-foreground">Connect a wallet to disperse.</p>}
+        {!isConnected && (
+          <p className="text-muted-foreground text-xs">
+            Connect a wallet to disperse.
+          </p>
+        )}
       </Card>
 
       {phase !== "idle" && (
         <Card className="mt-4 space-y-3">
-          <Step n={1} label="Authorize operator" state={stepState(phase, "operator")} />
-          <Step n={2} label="Derive stealth addresses" state={stepState(phase, "derive")} />
-          <Step n={3} label="Encrypt amounts (FHE)" state={stepState(phase, "encrypt")} />
-          <Step n={4} label="Submit disperse tx" state={stepState(phase, "submit")} />
+          <Step
+            n={1}
+            label="Authorize operator"
+            state={stepState(phase, "operator")}
+          />
+          <Step
+            n={2}
+            label="Derive stealth addresses"
+            state={stepState(phase, "derive")}
+          />
+          <Step
+            n={3}
+            label="Encrypt amounts (FHE)"
+            state={stepState(phase, "encrypt")}
+          />
+          <Step
+            n={4}
+            label="Submit disperse tx"
+            state={stepState(phase, "submit")}
+          />
           {err && <p className="text-xs text-red-500">{err}</p>}
         </Card>
       )}
 
       {links.length > 0 && (
         <Card className="mt-4 space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Dispersed. Private claim links</h3>
-          <p className="text-xs text-muted-foreground">
-            Share each link privately with its recipient. The link only reveals the announcement;
-            only the holder of the matching viewing key can decrypt the amount.
+          <h3 className="text-foreground text-sm font-medium">
+            Dispersed. Private claim links
+          </h3>
+          <p className="text-muted-foreground text-xs">
+            Share each link privately with its recipient. The link only reveals
+            the announcement; only the holder of the matching viewing key can
+            decrypt the amount.
           </p>
           <div className="space-y-2">
             {links.map((l, i) => (
-              <div key={i} className="rounded-xl border border-border bg-background p-2.5"><Mono>{l}</Mono></div>
+              <div
+                key={i}
+                className="border-border bg-background rounded-xl border p-2.5"
+              >
+                <Mono>{l}</Mono>
+              </div>
             ))}
           </div>
         </Card>
@@ -207,7 +282,13 @@ function parseCsv(csv: string): Row[] {
       const [id, amt] = raw.split(",").map((s) => s.trim());
       const isMeta = META_RE.test(id ?? "");
       const isAddr = ADDR_RE.test(id ?? "");
-      if (!isMeta && !isAddr) return { raw, meta: null, amount: null, error: "bad meta-address/address" };
+      if (!isMeta && !isAddr)
+        return {
+          raw,
+          meta: null,
+          amount: null,
+          error: "bad meta-address/address",
+        };
       let amount: bigint | null = null;
       try {
         amount = BigInt(amt);
@@ -219,7 +300,10 @@ function parseCsv(csv: string): Row[] {
     });
 }
 
-function stepState(phase: Phase, target: string): "idle" | "active" | "done" | "error" {
+function stepState(
+  phase: Phase,
+  target: string
+): "idle" | "active" | "done" | "error" {
   const order = ["operator", "derive", "encrypt", "submit", "done"];
   if (phase === "error") return target === "operator" ? "error" : "idle";
   const pi = order.indexOf(phase === "done" ? "done" : phase);
