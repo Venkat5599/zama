@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 // Deploy ConfidentialDisperse, wiring it to the official Sepolia singletons.
-// cToken + announcer addresses are read from addresses.sepolia.json — fill them
+// cToken + announcer addresses are read from addresses.sepolia.json - fill them
 // (cToken from the Zama Wrappers Registry, announcer = ERC-5564 singleton) first.
 async function main() {
   const file = path.join(__dirname, "..", "addresses.sepolia.json");

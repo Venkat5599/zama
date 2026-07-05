@@ -6,11 +6,11 @@ import {
   checkStealthAddress,
 } from "../lib/stealth";
 
-// Pure crypto roundtrip — no chain. Sender derives a stealth address from the
+// Pure crypto roundtrip - no chain. Sender derives a stealth address from the
 // recipient meta-address; recipient recovers the matching private key and proves
 // it controls exactly that address.
 describe("stealth (ERC-5564 scheme 1)", () => {
-  it("sender→recipient roundtrip: recipient recovers a key that controls the stealth address", () => {
+  it("sender->recipient roundtrip: recipient recovers a key that controls the stealth address", () => {
     const keys = generateStealthKeys();
 
     const payment = deriveStealthAddress(keys.stealthMetaAddress);

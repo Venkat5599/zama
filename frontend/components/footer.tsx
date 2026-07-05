@@ -110,7 +110,7 @@ export function Footer(): ReactNode {
 
           <div className="mt-16 pt-6">
             <p className="text-sm text-neutral-900/50 text-center">
-              © {new Date().getFullYear()} Circular. All rights reserved.
+              (c) {new Date().getFullYear()} Circular. All rights reserved.
             </p>
           </div>
         </div>

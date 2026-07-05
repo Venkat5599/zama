@@ -3,7 +3,7 @@ import { ethers, fhevm } from "hardhat";
 import { FhevmType } from "@fhevm/hardhat-plugin";
 import type { Signer } from "ethers";
 
-// Veil — core invariant test:
+// Veil - core invariant test:
 // One confidential disperse pays two stealth recipients DIFFERENT amounts.
 // Each recipient decrypts ONLY their own slice via EIP-712 user-decryption;
 // neither can read the other's. Proves the ERC-7984 ACL grant reaches the

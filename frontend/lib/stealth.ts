@@ -1,5 +1,5 @@
 /**
- * Veil — ERC-5564 stealth addresses (scheme 1, secp256k1).
+ * Veil - ERC-5564 stealth addresses (scheme 1, secp256k1).
  *
  * Client-only crypto. Spending / viewing private keys never leave the browser.
  * Sender derives a one-time stealth address + ephemeral pubkey + view tag from a
@@ -18,22 +18,22 @@ const N = Point.Fn.ORDER; // secp256k1 group order
 export const SCHEME_ID = 1;
 
 export interface StealthKeys {
-  spendingPrivateKey: string; // 0x… 32 bytes
-  viewingPrivateKey: string; // 0x… 32 bytes
-  spendingPublicKey: string; // 0x… 33 bytes compressed
-  viewingPublicKey: string; // 0x… 33 bytes compressed
-  stealthMetaAddress: string; // 0x… 66 bytes = spendPub||viewPub
+  spendingPrivateKey: string; // 0x... 32 bytes
+  viewingPrivateKey: string; // 0x... 32 bytes
+  spendingPublicKey: string; // 0x... 33 bytes compressed
+  viewingPublicKey: string; // 0x... 33 bytes compressed
+  stealthMetaAddress: string; // 0x... 66 bytes = spendPub||viewPub
 }
 
 export interface StealthPayment {
-  stealthAddress: string; // 0x… 20-byte one-time address
-  ephemeralPublicKey: string; // 0x… 33 bytes compressed (R)
+  stealthAddress: string; // 0x... 20-byte one-time address
+  ephemeralPublicKey: string; // 0x... 33 bytes compressed (R)
   viewTag: number; // 0..255, first byte of the shared-secret hash
 }
 
 export interface ScanMatch {
   stealthAddress: string;
-  stealthPrivateKey: string; // 0x… 32 bytes, controls the one-time address
+  stealthPrivateKey: string; // 0x... 32 bytes, controls the one-time address
 }
 
 // ---- helpers ---------------------------------------------------------------
@@ -46,7 +46,7 @@ function bigToBytes32(x: bigint): Uint8Array {
   return getBytes("0x" + x.toString(16).padStart(64, "0"));
 }
 
-/** keccak256 of the compressed shared-secret point → 32-byte hash. */
+/** keccak256 of the compressed shared-secret point -> 32-byte hash. */
 function sharedSecretHash(sharedPointCompressed: Uint8Array): Uint8Array {
   return getBytes(keccak256(sharedPointCompressed));
 }
@@ -98,13 +98,13 @@ export function deriveStealthAddress(
     : secp256k1.utils.randomSecretKey();
   const R = secp256k1.getPublicKey(r, true); // ephemeral pubkey
 
-  // shared secret S = r · P_view
+  // shared secret S = r * P_view
   const Pview = Point.fromBytes(viewingPublicKey);
   const S = Pview.multiply(BigInt(hexlify(r))).toBytes(true);
   const hash = sharedSecretHash(S);
   const viewTag = hash[0];
 
-  // stealth pubkey P_stealth = P_spend + hash·G
+  // stealth pubkey P_stealth = P_spend + hash*G
   const hashScalar = BigInt(keccak256(S)) % N;
   const Pstealth = Point.fromBytes(spendingPublicKey).add(Point.BASE.multiply(hashScalar));
   const stealthAddress = computeAddress(toHex(Pstealth.toBytes(true)));
@@ -126,7 +126,7 @@ export function checkStealthAddress(
   spendingPublicKey: string,
   spendingPrivateKey: string
 ): ScanMatch | null {
-  // shared secret S = p_view · R
+  // shared secret S = p_view * R
   const R = Point.fromBytes(getBytes(ephemeralPublicKey));
   const S = R.multiply(BigInt(viewingPrivateKey)).toBytes(true);
   const hash = sharedSecretHash(S);

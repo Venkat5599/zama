@@ -1,5 +1,5 @@
 "use client";
-// Relayer-SDK (Zama FHEVM) browser instance — encrypt inputs + user-decrypt.
+// Relayer-SDK (Zama FHEVM) browser instance - encrypt inputs + user-decrypt.
 import type { FhevmInstance } from "@zama-fhe/relayer-sdk/web";
 
 let instance: FhevmInstance | null = null;

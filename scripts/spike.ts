@@ -28,7 +28,7 @@ async function main() {
   // 1) authorize disperse as operator (once)
   const isOp = await (cToken as any).isOperator(senderAddr, cfg.confidentialDisperse);
   if (!isOp) {
-    console.log("Setting operator…");
+    console.log("Setting operator...");
     await (await (cToken as any).setOperator(cfg.confidentialDisperse, 2 ** 48 - 1)).wait();
   }
 
@@ -45,7 +45,7 @@ async function main() {
     .encrypt();
 
   // 4) disperse
-  console.log("Dispersing…");
+  console.log("Dispersing...");
   await (
     await disperse.disperse(
       [pay.stealthAddress],
@@ -82,7 +82,7 @@ async function main() {
 
   console.log(`Decrypted amount: ${clear}  (expected ${AMOUNT})`);
   if (clear !== AMOUNT) throw new Error("SPIKE FAILED: amount mismatch");
-  console.log("SPIKE PASSED ✓  ACL grant reached the fresh stealth address.");
+  console.log("SPIKE PASSED   ACL grant reached the fresh stealth address.");
 }
 
 main().catch((e) => {

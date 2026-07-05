@@ -6,10 +6,10 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {IERC7984} from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
 import {IERC5564Announcer} from "./interfaces/IERC5564Announcer.sol";
 
-/// @title ConfidentialDisperse — Veil's confidential batch-payment primitive.
+/// @title ConfidentialDisperse - Veil's confidential batch-payment primitive.
 /// @notice Sends encrypted amounts (ERC-7984 / FHE) to one-time stealth
 ///         addresses (ERC-5564) in a single transaction. Onchain observers see
-///         ciphertext handles going to unlinkable addresses — neither the
+///         ciphertext handles going to unlinkable addresses - neither the
 ///         amounts nor the recipient identities are revealed.
 ///
 /// @dev Flow (resolved in the week-1 spike):
@@ -19,7 +19,7 @@ import {IERC5564Announcer} from "./interfaces/IERC5564Announcer.sol";
 ///      the token a transient allowance, then calls the ERC-7984 euint64 transfer.
 ///      The token's `_update` internally calls `FHE.allow(transferred, to)` /
 ///      `FHE.allow(balance, to)`, so the freshly-derived stealth address is
-///      granted decrypt rights automatically — the recipient later decrypts via
+///      granted decrypt rights automatically - the recipient later decrypts via
 ///      the EIP-712 user-decryption flow with their stealth key.
 ///
 ///      Prerequisite: the sender must call `cToken.setOperator(disperse, until)`
@@ -49,7 +49,7 @@ contract ConfidentialDisperse is ZamaEthereumConfig {
     /// @param inputProof       single batched input proof covering every handle
     /// @param ephemeralPubKeys sender ephemeral pubkeys (33-byte compressed), per recipient
     /// @param metadata         ERC-5564 metadata per recipient; byte[0] is the view tag
-    /// @dev Decoys are recipients whose encAmount encrypts 0 — indistinguishable onchain.
+    /// @dev Decoys are recipients whose encAmount encrypts 0 - indistinguishable onchain.
     function disperse(
         address[] calldata stealthAddresses,
         externalEuint64[] calldata encAmounts,

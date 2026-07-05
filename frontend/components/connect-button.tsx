@@ -3,7 +3,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
 function short(a?: string) {
-  return a ? `${a.slice(0, 5)}…${a.slice(-4)}` : "";
+  return a ? `${a.slice(0, 5)}...${a.slice(-4)}` : "";
 }
 
 export function ConnectButton(): React.ReactNode {

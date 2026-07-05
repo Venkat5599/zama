@@ -12,8 +12,8 @@ const LAYER_BADGES = [
 ];
 
 const DEPLOYMENT_STATS = [
-  { icon: "🔒", label: "Encrypted amounts", change: "FHE" },
-  { icon: "🕶", label: "Stealth recipients", change: "ERC-5564" },
+  { icon: "", label: "Encrypted amounts", change: "FHE" },
+  { icon: "", label: "Stealth recipients", change: "ERC-5564" },
 ];
 
 const cardAnimation = {
@@ -178,9 +178,9 @@ function ProjectCardContent(): ReactNode {
 
       <div className="absolute bottom-3 left-5 flex items-center gap-2 text-neutral-700 text-xs tracking-widest" aria-hidden="true">
         <span>PRJ</span>
-        <span>•</span>
+        <span>/</span>
         <span>2024</span>
-        <span>•</span>
+        <span>/</span>
         <span>LIVE</span>
       </div>
     </>
@@ -227,12 +227,12 @@ function DashboardCard(): ReactNode {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-neutral-900 rounded-2xl px-5 py-3 shadow-xl z-20 whitespace-nowrap">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-neutral-400 text-xs">Build status</span>
-            <span className="text-neutral-500 text-xs">ⓘ</span>
+            <span className="text-neutral-500 text-xs"></span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-lg font-medium text-white">All passing</span>
             <span className="text-xs font-medium text-accent bg-accent/20 px-2 py-0.5 rounded">
-              ✓ 100%
+              100%
             </span>
           </div>
         </div>

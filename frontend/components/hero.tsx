@@ -93,7 +93,7 @@ export function Hero(): ReactNode {
             transition={{ duration: 0.8, ease }}
           >
             Now Available
-            <span className="text-accent">✦</span>
+            <span className="text-accent"></span>
           </motion.div>
 
           <h1 className="text-8xl max-[850px]:text-5xl font-medium tracking-tight leading-[1.1] mb-6 text-black">

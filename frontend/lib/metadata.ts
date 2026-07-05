@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: "Veil — Confidential Disperse",
+  name: "Veil - Confidential Disperse",
   description:
     "Private token distribution on public chains. Hide how much (Zama FHE) and who (stealth addresses).",
   url: "https://example.com",

@@ -89,7 +89,7 @@ export const footerConfig = {
     placeholder: "Enter your email",
     button: "Join Waitlist",
   },
-  copyright: `© ${new Date().getFullYear()} Circular. All rights reserved.`,
+  copyright: `(c) ${new Date().getFullYear()} Circular. All rights reserved.`,
 };
 
 /**
