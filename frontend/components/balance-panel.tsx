@@ -45,7 +45,12 @@ export function BalancePanel() {
       const { publicKey, privateKey } = fhe.generateKeypair();
       const start = Math.floor(Date.now() / 1000);
       const days = 1;
-      const eip712 = fhe.createEIP712(publicKey, [ADDRESSES.cToken], start, days);
+      const eip712 = fhe.createEIP712(
+        publicKey,
+        [ADDRESSES.cToken],
+        start,
+        days
+      );
       const types = { ...(eip712.types as Record<string, unknown>) };
       delete (types as Record<string, unknown>).EIP712Domain;
 
@@ -68,7 +73,9 @@ export function BalancePanel() {
         start,
         days
       );
-      setClear(BigInt(res[handle as `0x${string}`] as string | number | bigint));
+      setClear(
+        BigInt(res[handle as `0x${string}`] as string | number | bigint)
+      );
     } catch (e) {
       const m = e as { shortMessage?: string; message?: string };
       setErr(m?.shortMessage ?? m?.message ?? "decrypt failed");
@@ -83,19 +90,23 @@ export function BalancePanel() {
   return (
     <Card className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="text-muted-foreground text-[10px] font-medium tracking-[0.18em] uppercase">
           Your confidential cUSDT
         </div>
-        <div className="mt-1.5 text-lg font-semibold text-foreground">
+        <div className="text-foreground mt-1.5 text-lg font-semibold">
           {clear !== null ? (
             <>
               {clear.toString()}{" "}
-              <span className="text-sm font-normal text-muted-foreground">cUSDT</span>
+              <span className="text-muted-foreground text-sm font-normal">
+                cUSDT
+              </span>
             </>
           ) : uninitialized ? (
             <span className="text-muted-foreground">No balance yet</span>
           ) : (
-            <span className="text-muted-foreground">•••••• encrypted onchain</span>
+            <span className="text-muted-foreground">
+              •••••• encrypted onchain
+            </span>
           )}
         </div>
         {!uninitialized && clear === null && (

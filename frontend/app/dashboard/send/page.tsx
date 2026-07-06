@@ -33,13 +33,7 @@ type Row = {
   error?: string;
 };
 type Phase =
-  | "idle"
-  | "derive"
-  | "operator"
-  | "submit"
-  | "announce"
-  | "done"
-  | "error";
+  "idle" | "derive" | "operator" | "submit" | "announce" | "done" | "error";
 
 const META_RE = /^0x[0-9a-fA-F]{132}$/;
 const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -223,7 +217,7 @@ export default function SendPage() {
 
       <Card className="space-y-5">
         <div>
-          <div className="mb-2 text-xs font-medium text-muted-foreground">
+          <div className="text-muted-foreground mb-2 text-xs font-medium">
             Start from a real-world distribution
           </div>
           <div className="flex flex-wrap gap-2">
@@ -244,7 +238,7 @@ export default function SendPage() {
             ))}
           </div>
           {scenario && (
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-2 text-xs">
               {SCENARIOS.find((s) => s.label === scenario)?.blurb} Example
               recipients are prefilled — edit freely before dispersing.
             </p>
