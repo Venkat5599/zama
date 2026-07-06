@@ -43,6 +43,41 @@ type Phase =
 const META_RE = /^0x[0-9a-fA-F]{132}$/;
 const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
 
+// Real-world distribution templates. Each one-click preset fills the recipient
+// list with the shape a real team would run — the exact use cases the bounty
+// calls out (payroll, investor rounds, community rewards, vesting unlocks).
+const SCENARIOS: {
+  label: string;
+  blurb: string;
+  amounts: number[];
+  pad: number;
+}[] = [
+  {
+    label: "Payroll run",
+    blurb: "Pay a team confidentially — no salary is legible onchain.",
+    amounts: [4200, 3800, 5100, 2750, 3600],
+    pad: 0,
+  },
+  {
+    label: "Investor distribution",
+    blurb: "Pro-rata payout to a cap table without revealing check sizes.",
+    amounts: [25000, 15000, 10000, 5000],
+    pad: 0,
+  },
+  {
+    label: "Community rewards",
+    blurb: "Airdrop equal grants; pad with decoys to hide the true count.",
+    amounts: [150, 150, 150, 150, 150, 150],
+    pad: 8,
+  },
+  {
+    label: "Vesting unlock",
+    blurb: "Release a cliff tranche to founders — amounts stay private.",
+    amounts: [8000, 8000, 8000],
+    pad: 0,
+  },
+];
+
 export default function SendPage() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
@@ -53,6 +88,16 @@ export default function SendPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [err, setErr] = useState<string | null>(null);
   const [links, setLinks] = useState<string[]>([]);
+  const [scenario, setScenario] = useState<string | null>(null);
+
+  function applyScenario(s: (typeof SCENARIOS)[number]) {
+    const lines = s.amounts.map(
+      (a) => `${generateStealthKeys().stealthMetaAddress},${a}`
+    );
+    setCsv(lines.join("\n"));
+    setPadTo(s.pad);
+    setScenario(s.label);
+  }
 
   const rows = useMemo<Row[]>(() => parseCsv(csv), [csv]);
   const valid = rows.filter((r) => r.meta && r.amount != null);
@@ -170,10 +215,39 @@ export default function SendPage() {
       <PageHeader
         eyebrow="Distributor"
         title="Confidential disperse"
-        sub="One line per recipient: meta-address,amount (or address,amount if they registered). Amounts are encrypted in your browser and dispersed through the TokenOps SDK; recipients receive one-time stealth addresses."
+        sub="Run payroll, investor payouts, community rewards or vesting unlocks — confidentially. One line per recipient: meta-address,amount (or address,amount if they registered). Amounts are encrypted in your browser and dispersed through the TokenOps SDK; recipients receive one-time stealth addresses."
       />
 
       <Card className="space-y-5">
+        <div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">
+            Start from a real-world distribution
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {SCENARIOS.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => applyScenario(s)}
+                className={
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors " +
+                  (scenario === s.label
+                    ? "border-accent bg-accent text-black"
+                    : "border-border bg-background text-foreground hover:border-accent")
+                }
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          {scenario && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {SCENARIOS.find((s) => s.label === scenario)?.blurb} Example
+              recipients are prefilled — edit freely before dispersing.
+            </p>
+          )}
+        </div>
+
         <Field
           label="Recipients (CSV)"
           hint="Demo scale: 5-10 rows. FHE batch ops are costly."
