@@ -93,7 +93,11 @@ async function main() {
     const eip712 = fhe.createEIP712(publicKey, [CUSDT], start, days);
     const types = { ...(eip712.types as any) };
     delete types.EIP712Domain;
-    const sig = await stealth.signTypedData(eip712.domain as any, types, eip712.message as any);
+    const sig = await stealth.signTypedData(
+      eip712.domain as any,
+      types,
+      eip712.message as any
+    );
 
     const res = await fhe.userDecrypt(
       [{ handle, contractAddress: CUSDT }],

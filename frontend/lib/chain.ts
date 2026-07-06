@@ -69,6 +69,18 @@ export const cTokenAbi = [
 
 export const announcerAbi = [
   {
+    type: "function",
+    name: "announce",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "schemeId", type: "uint256" },
+      { name: "stealthAddress", type: "address" },
+      { name: "ephemeralPubKey", type: "bytes" },
+      { name: "metadata", type: "bytes" },
+    ],
+    outputs: [],
+  },
+  {
     type: "event",
     name: "Announcement",
     inputs: [

@@ -1,11 +1,10 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { hexlify } from "ethers";
 import { maxUint48 } from "viem";
 import {
   ADDRESSES,
-  disperseAbi,
+  announcerAbi,
   cTokenAbi,
   registryAbi,
   SCHEME_ID,
@@ -15,7 +14,7 @@ import {
   generateStealthKeys,
   encodeMetadata,
 } from "@/lib/stealth";
-import { getFhe } from "@/lib/fhe";
+import { getDisperseClient } from "@/lib/disperse";
 import {
   Card,
   PageHeader,
@@ -33,7 +32,13 @@ type Row = {
   error?: string;
 };
 type Phase =
-  "idle" | "operator" | "derive" | "encrypt" | "submit" | "done" | "error";
+  | "idle"
+  | "derive"
+  | "operator"
+  | "submit"
+  | "announce"
+  | "done"
+  | "error";
 
 const META_RE = /^0x[0-9a-fA-F]{132}$/;
 const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -90,23 +95,6 @@ export default function SendPage() {
           amount: 0n,
         });
 
-      setPhase("operator");
-      const isOp = (await publicClient.readContract({
-        address: ADDRESSES.cToken,
-        abi: cTokenAbi,
-        functionName: "isOperator",
-        args: [address, ADDRESSES.confidentialDisperse],
-      })) as boolean;
-      if (!isOp) {
-        const opHash = await walletClient.writeContract({
-          address: ADDRESSES.cToken,
-          abi: cTokenAbi,
-          functionName: "setOperator",
-          args: [ADDRESSES.confidentialDisperse, Number(maxUint48)],
-        });
-        await publicClient.waitForTransactionReceipt({ hash: opHash });
-      }
-
       setPhase("derive");
       const stealthAddrs: `0x${string}`[] = [];
       const ephemerals: `0x${string}`[] = [];
@@ -123,27 +111,49 @@ export default function SendPage() {
           );
       }
 
-      setPhase("encrypt");
-      const fhe = await getFhe();
-      const input = fhe.createEncryptedInput(
-        ADDRESSES.confidentialDisperse,
-        address
-      );
-      for (const r of resolved) input.add64(r.amount);
-      const enc = await input.encrypt();
-      const handles = enc.handles.map(
-        (h: Uint8Array) => hexlify(h) as `0x${string}`
-      );
-      const proof = hexlify(enc.inputProof) as `0x${string}`;
+      // TokenOps SDK client — routes the disperse through the official
+      // ConfidentialDisperse singleton on Sepolia (auto-resolved by chain id).
+      const client = await getDisperseClient(publicClient, walletClient);
 
+      setPhase("operator");
+      const isOp = (await publicClient.readContract({
+        address: ADDRESSES.cToken,
+        abi: cTokenAbi,
+        functionName: "isOperator",
+        args: [address, client.address],
+      })) as boolean;
+      if (!isOp) {
+        const opHash = await walletClient.writeContract({
+          address: ADDRESSES.cToken,
+          abi: cTokenAbi,
+          functionName: "setOperator",
+          args: [client.address, Number(maxUint48)],
+        });
+        await publicClient.waitForTransactionReceipt({ hash: opHash });
+      }
+
+      // SDK encrypts amounts (via our relayer-backed encryptor, one batched
+      // input proof) and transfers the encrypted euint64 to each stealth
+      // address; the singleton grants each recipient FHE-ACL to user-decrypt.
       setPhase("submit");
-      const hash = await walletClient.writeContract({
-        address: ADDRESSES.confidentialDisperse,
-        abi: disperseAbi,
-        functionName: "disperse",
-        args: [stealthAddrs, handles, proof, ephemerals, metadatas],
+      await client.disperse({
+        token: ADDRESSES.cToken,
+        mode: "direct",
+        recipients: stealthAddrs,
+        amounts: resolved.map((r) => r.amount),
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+
+      // ERC-5564: announce each stealth payment so recipients can scan + claim.
+      setPhase("announce");
+      for (let i = 0; i < stealthAddrs.length; i++) {
+        const annHash = await walletClient.writeContract({
+          address: ADDRESSES.erc5564Announcer,
+          abi: announcerAbi,
+          functionName: "announce",
+          args: [SCHEME_ID, stealthAddrs[i], ephemerals[i], metadatas[i]],
+        });
+        await publicClient.waitForTransactionReceipt({ hash: annHash });
+      }
 
       setLinks(realLinks);
       setPhase("done");
@@ -160,7 +170,7 @@ export default function SendPage() {
       <PageHeader
         eyebrow="Distributor"
         title="Confidential disperse"
-        sub="One line per recipient: meta-address,amount (or address,amount if they registered). Amounts are encrypted in your browser; recipients receive one-time stealth addresses."
+        sub="One line per recipient: meta-address,amount (or address,amount if they registered). Amounts are encrypted in your browser and dispersed through the TokenOps SDK; recipients receive one-time stealth addresses."
       />
 
       <Card className="space-y-5">
@@ -225,23 +235,23 @@ export default function SendPage() {
         <Card className="mt-4 space-y-3">
           <Step
             n={1}
-            label="Authorize operator"
-            state={stepState(phase, "operator")}
-          />
-          <Step
-            n={2}
             label="Derive stealth addresses"
             state={stepState(phase, "derive")}
           />
           <Step
+            n={2}
+            label="Authorize TokenOps singleton (operator)"
+            state={stepState(phase, "operator")}
+          />
+          <Step
             n={3}
-            label="Encrypt amounts (FHE)"
-            state={stepState(phase, "encrypt")}
+            label="Encrypt + disperse via TokenOps SDK"
+            state={stepState(phase, "submit")}
           />
           <Step
             n={4}
-            label="Submit disperse tx"
-            state={stepState(phase, "submit")}
+            label="Announce stealth payments (ERC-5564)"
+            state={stepState(phase, "announce")}
           />
           {err && <p className="text-xs text-red-500">{err}</p>}
         </Card>
@@ -304,8 +314,8 @@ function stepState(
   phase: Phase,
   target: string
 ): "idle" | "active" | "done" | "error" {
-  const order = ["operator", "derive", "encrypt", "submit", "done"];
-  if (phase === "error") return target === "operator" ? "error" : "idle";
+  const order = ["derive", "operator", "submit", "announce", "done"];
+  if (phase === "error") return target === "derive" ? "error" : "idle";
   const pi = order.indexOf(phase === "done" ? "done" : phase);
   const ti = order.indexOf(target);
   if (pi > ti) return "done";

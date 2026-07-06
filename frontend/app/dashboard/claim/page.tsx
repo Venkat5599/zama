@@ -71,7 +71,7 @@ export default function ClaimPage() {
     try {
       const logs = await publicClient.getLogs({
         address: ADDRESSES.erc5564Announcer,
-        event: announcerAbi[0],
+        event: announcerAbi[1],
         args: { schemeId: SCHEME_ID },
         fromBlock: START_BLOCK,
         toBlock: "latest",
@@ -249,7 +249,9 @@ export default function ClaimPage() {
             shared the right meta-address.
           </p>
           <div className="mt-4 flex justify-center">
-            <GhostButton href="/dashboard/register">My meta-address</GhostButton>
+            <GhostButton href="/dashboard/register">
+              My meta-address
+            </GhostButton>
           </div>
         </Card>
       )}
