@@ -15,6 +15,7 @@ import {
   encodeMetadata,
 } from "@/lib/stealth";
 import { getDisperseClient } from "@/lib/disperse";
+import { BalancePanel } from "@/components/balance-panel";
 import {
   Card,
   PageHeader,
@@ -217,6 +218,8 @@ export default function SendPage() {
         title="Confidential disperse"
         sub="Run payroll, investor payouts, community rewards or vesting unlocks — confidentially. One line per recipient: meta-address,amount (or address,amount if they registered). Amounts are encrypted in your browser and dispersed through the TokenOps SDK; recipients receive one-time stealth addresses."
       />
+
+      <BalancePanel />
 
       <Card className="space-y-5">
         <div>
