@@ -209,7 +209,9 @@ async function main() {
       start,
       days
     );
-    const clear = BigInt(dec[handle] as string | number | bigint);
+    const clear = BigInt(
+      dec[handle as `0x${string}`] as string | number | bigint
+    );
     const ok = clear === expect;
     allOk &&= ok;
     console.log(
