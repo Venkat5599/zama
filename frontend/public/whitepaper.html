@@ -49,6 +49,22 @@
   .kw { font-weight: 700; }
   svg text { font-family: "Georgia", serif; }
   svg .m { font-family: "SF Mono", monospace; }
+
+  /* Screen (web) reading: give the print-styled doc real margins so nothing
+     is clipped at the viewport edges. Print/PDF is unaffected. */
+  @media screen {
+    body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 48px 80px;
+      font-size: 11pt;
+    }
+    .cols { column-gap: 32px; }
+  }
+  @media screen and (max-width: 640px) {
+    body { padding: 24px 20px 64px; }
+    .cols { column-count: 1; }
+  }
 </style>
 </head>
 <body>
