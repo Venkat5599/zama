@@ -15,7 +15,7 @@ export const siteConfig = {
     "Confidential token distribution on public chains — FHE amounts (ERC-7984) plus stealth recipients (ERC-5564), live on Zama FHEVM.",
 
   // URLs
-  url: "https://veil-fhe.vercel.app",
+  url: "https://veil-disperse.vercel.app",
   twitter: "@zama_fhe",
 
   // Navigation

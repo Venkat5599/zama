@@ -4,7 +4,7 @@ export const siteConfig = {
   name: "Veil - Confidential Disperse",
   description:
     "Private token distribution on public chains. Hide how much (Zama FHE) and who (stealth addresses).",
-  url: "https://veil-fhe.vercel.app",
+  url: "https://veil-disperse.vercel.app",
   ogImage: "/og-image.png",
   creator: "@zama_fhe",
   authors: [
