@@ -69,13 +69,26 @@ export default function ClaimPage() {
     setFunnel({ scanned: 0, owned: 0 });
     setPhase("scanning");
     try {
-      const logs = await publicClient.getLogs({
-        address: ADDRESSES.erc5564Announcer,
-        event: announcerAbi[1],
-        args: { schemeId: SCHEME_ID },
-        fromBlock: START_BLOCK,
-        toBlock: "latest",
-      });
+      // Public RPCs reject huge eth_getLogs ranges. Start from a configured
+      // block (or a recent window if unset) and page through in fixed chunks.
+      const latest = await publicClient.getBlockNumber();
+      const WINDOW = 100000n; // ~2 weeks of Sepolia blocks
+      const CHUNK = 9000n;
+      const fromBlock =
+        START_BLOCK > 0n ? START_BLOCK : latest > WINDOW ? latest - WINDOW : 0n;
+
+      const logs: Awaited<ReturnType<typeof publicClient.getLogs>> = [];
+      for (let start = fromBlock; start <= latest; start += CHUNK + 1n) {
+        const end = start + CHUNK > latest ? latest : start + CHUNK;
+        const chunk = await publicClient.getLogs({
+          address: ADDRESSES.erc5564Announcer,
+          event: announcerAbi[1],
+          args: { schemeId: SCHEME_ID },
+          fromBlock: start,
+          toBlock: end,
+        });
+        logs.push(...chunk);
+      }
 
       const hits: Found[] = [];
       for (const log of logs) {
