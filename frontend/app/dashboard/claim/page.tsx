@@ -77,18 +77,22 @@ export default function ClaimPage() {
       const fromBlock =
         START_BLOCK > 0n ? START_BLOCK : latest > WINDOW ? latest - WINDOW : 0n;
 
-      const logs: Awaited<ReturnType<typeof publicClient.getLogs>> = [];
+      const ranges: [bigint, bigint][] = [];
       for (let start = fromBlock; start <= latest; start += CHUNK + 1n) {
-        const end = start + CHUNK > latest ? latest : start + CHUNK;
-        const chunk = await publicClient.getLogs({
-          address: ADDRESSES.erc5564Announcer,
-          event: announcerAbi[1],
-          args: { schemeId: SCHEME_ID },
-          fromBlock: start,
-          toBlock: end,
-        });
-        logs.push(...chunk);
+        ranges.push([start, start + CHUNK > latest ? latest : start + CHUNK]);
       }
+      const nested = await Promise.all(
+        ranges.map(([f, t]) =>
+          publicClient.getLogs({
+            address: ADDRESSES.erc5564Announcer,
+            event: announcerAbi[1],
+            args: { schemeId: SCHEME_ID },
+            fromBlock: f,
+            toBlock: t,
+          })
+        )
+      );
+      const logs = nested.flat();
 
       const hits: Found[] = [];
       for (const log of logs) {
