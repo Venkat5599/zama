@@ -72,8 +72,12 @@ export default function ClaimPage() {
       // Public RPCs reject huge eth_getLogs ranges. Start from a configured
       // block (or a recent window if unset) and page through in fixed chunks.
       const latest = await publicClient.getBlockNumber();
-      const WINDOW = 100000n; // ~2 weeks of Sepolia blocks
-      const CHUNK = 9000n;
+      // The ERC-5564 announcer is a shared Sepolia contract with heavy traffic,
+      // so keep ranges small: public RPCs cap eth_getLogs by span AND result
+      // count. Scan a recent window in small chunks (override via env for older
+      // payments).
+      const WINDOW = 15000n; // ~2 days of Sepolia blocks
+      const CHUNK = 800n;
       const fromBlock =
         START_BLOCK > 0n ? START_BLOCK : latest > WINDOW ? latest - WINDOW : 0n;
 
