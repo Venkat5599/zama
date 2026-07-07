@@ -76,8 +76,8 @@ export default function ClaimPage() {
       // so keep ranges small: public RPCs cap eth_getLogs by span AND result
       // count. Scan a recent window in small chunks (override via env for older
       // payments).
-      const WINDOW = 15000n; // ~2 days of Sepolia blocks
-      const CHUNK = 800n;
+      const WINDOW = 40000n; // ~5 days of Sepolia blocks
+      const CHUNK = 5000n;
       const fromBlock =
         START_BLOCK > 0n ? START_BLOCK : latest > WINDOW ? latest - WINDOW : 0n;
 

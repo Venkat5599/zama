@@ -7,8 +7,7 @@ export const wagmiConfig = createConfig({
   connectors: [injected()],
   transports: {
     [sepolia.id]: http(
-      process.env.NEXT_PUBLIC_RPC_URL ??
-        "https://ethereum-sepolia-rpc.publicnode.com"
+      process.env.NEXT_PUBLIC_RPC_URL ?? "https://sepolia.drpc.org"
     ),
   },
   ssr: true,
