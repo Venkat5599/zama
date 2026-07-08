@@ -76,27 +76,28 @@ export default function ClaimPage() {
       // so keep ranges small: public RPCs cap eth_getLogs by span AND result
       // count. Scan a recent window in small chunks (override via env for older
       // payments).
-      const WINDOW = 40000n; // ~5 days of Sepolia blocks
+      const WINDOW = 30000n; // ~4 days of Sepolia blocks
       const CHUNK = 5000n;
       const fromBlock =
         START_BLOCK > 0n ? START_BLOCK : latest > WINDOW ? latest - WINDOW : 0n;
 
-      const ranges: [bigint, bigint][] = [];
-      for (let start = fromBlock; start <= latest; start += CHUNK + 1n) {
-        ranges.push([start, start + CHUNK > latest ? latest : start + CHUNK]);
+      const getChunk = (f: bigint, t: bigint) =>
+        publicClient.getLogs({
+          address: ADDRESSES.erc5564Announcer,
+          event: announcerAbi[1],
+          args: { schemeId: SCHEME_ID },
+          fromBlock: f,
+          toBlock: t,
+        });
+
+      // Sequential (not parallel) so we don't burst a free RPC into a rate
+      // limit; the fallback transport rotates endpoints on any single failure.
+      const firstEnd = fromBlock + CHUNK > latest ? latest : fromBlock + CHUNK;
+      let logs = await getChunk(fromBlock, firstEnd);
+      for (let start = firstEnd + 1n; start <= latest; start += CHUNK + 1n) {
+        const end = start + CHUNK > latest ? latest : start + CHUNK;
+        logs = logs.concat(await getChunk(start, end));
       }
-      const nested = await Promise.all(
-        ranges.map(([f, t]) =>
-          publicClient.getLogs({
-            address: ADDRESSES.erc5564Announcer,
-            event: announcerAbi[1],
-            args: { schemeId: SCHEME_ID },
-            fromBlock: f,
-            toBlock: t,
-          })
-        )
-      );
-      const logs = nested.flat();
 
       const hits: Found[] = [];
       for (const log of logs) {
