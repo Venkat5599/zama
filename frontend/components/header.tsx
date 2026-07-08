@@ -186,9 +186,6 @@ export function Header(): ReactNode {
         </nav>
 
         <div className="flex items-center gap-4 max-[850px]:hidden">
-          <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
-            Sign in
-          </a>
           <a href="/dashboard/send" className="group relative inline-flex items-center">
             <span className="absolute right-0 inset-y-0 w-[calc(100%-1.5rem)] rounded-xl bg-accent" />
             <span className="relative z-10 px-5 py-3 rounded-xl bg-foreground text-background text-sm font-medium">Launch app</span>
@@ -242,10 +239,7 @@ export function Header(): ReactNode {
               </nav>
 
               <div className="flex items-center justify-between pt-8 pb-2">
-                <a href="#" className="text-base font-medium text-foreground" onClick={closeMobile}>
-                  Sign in
-                </a>
-                <a href="#" className="group relative inline-flex items-center" onClick={closeMobile}>
+                <a href="/dashboard/send" className="group relative inline-flex items-center" onClick={closeMobile}>
                   <span className="absolute right-0 inset-y-0 w-[calc(100%-1.5rem)] rounded-2xl bg-accent" />
                   <span className="relative z-10 px-5 py-3 rounded-2xl bg-foreground text-background text-sm font-medium">Launch app</span>
                   <span className="relative -left-px z-10 w-10 h-10 rounded-2xl flex items-center justify-center text-foreground">
